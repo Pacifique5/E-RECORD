@@ -85,6 +85,7 @@ const NotificationSettings = () => (
             type="email"
             value="aidushimire@gmail.com"
             className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            readOnly
           />
         </div>
         <div>
@@ -93,6 +94,7 @@ const NotificationSettings = () => (
             type="tel"
             value="0788888888"
             className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            readOnly
           />
         </div>
       </div>

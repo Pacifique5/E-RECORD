@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -42,6 +42,14 @@ const TabButton = ({ active, label, count }: { active: boolean; label: string; c
 };
 
 export default function NotificationsPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <NotificationsContent />
+    </Suspense>
+  );
+}
+
+function NotificationsContent() {
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'all';
 
