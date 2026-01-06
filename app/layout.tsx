@@ -5,15 +5,19 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'E-Record Management System',
-  description: 'A comprehensive e-record management system for schools',
+  title: 'E-Record | School Management System',
+  description: 'School Management System for efficient record keeping',
+  viewport: 'width=device-width, initial-scale=1.0',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>
