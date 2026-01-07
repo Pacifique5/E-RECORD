@@ -72,10 +72,10 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-96 bg-slate-900 border-r border-slate-800 flex flex-col rounded-r-3xl">
         <div className="p-6">
           <div className="flex flex-col items-start">
-            <Link href="/portal/accountant" className="text-xl font-semibold text-blue-600">
+            <Link href="/portal/accountant" className="text-xl font-semibold text-white">
               E-Record
             </Link>
             <span className="bg-[#1A75FF] text-white rounded-full px-5 py-1 font-medium text-sm mt-2">
@@ -92,10 +92,10 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-lg",
+                  "flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200",
                   isActive
                     ? "bg-blue-600 text-white"
-                    : "text-gray-600 hover:bg-gray-50"
+                    : "text-gray-300 hover:bg-slate-800 hover:text-white hover:translate-x-1"
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -110,7 +110,7 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
         <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-8">
             <h1 className="text-2xl font-semibold text-gray-900">
-              Welcome to our platform fique
+              {/* Welcome to our platform fique */}
             </h1>
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">

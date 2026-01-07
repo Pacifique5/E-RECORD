@@ -21,9 +21,9 @@ export default function Sidebar() {
   ], [])
 
   return (
-    <div className="w-[320px] bg-white border-r border-gray-200">
+    <div className="w-[320px] bg-slate-900 border-r border-slate-800 rounded-r-3xl">
       <div className="p-8">
-        <Link href="/portal/accountant" className="text-3xl font-bold text-blue-600">
+        <Link href="/portal/accountant" className="text-3xl font-bold text-white">
           E-Record
         </Link>
         <div className="mt-4">
@@ -39,8 +39,8 @@ export default function Sidebar() {
               <li key={item.id}>
                 <Link
                   href={item.href}
-                  className={`flex items-center px-4 py-3 rounded-md text-base font-medium transition-colors ${
-                    isActive ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  className={`flex items-center px-4 py-3 rounded-2xl text-base font-medium transition-all duration-200 ${
+                    isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-slate-800 hover:text-white hover:translate-x-1"
                   }`}
                 >
                   <item.icon className="mr-4 h-5 w-5" />
