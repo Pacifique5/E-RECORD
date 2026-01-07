@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum, IsDate } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum } from 'class-validator';
 import { FeeType, FeeStatus } from '../../entities';
 
 export class CreateFeeDto {
