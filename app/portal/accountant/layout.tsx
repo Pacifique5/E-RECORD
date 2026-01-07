@@ -6,7 +6,7 @@ import { Bell, LayoutGrid, DollarSign, FileText, BarChart2, Users2, Package, Fil
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HeaderUserActions } from '@/components/HeaderUserActions'
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
 const navigation = [
   {
@@ -70,6 +70,25 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
   const [selectedTerm, setSelectedTerm] = useState('First Term')
   const [termDropdown, setTermDropdown] = useState(false)
 
+  const yearRef = useRef<HTMLDivElement | null>(null)
+  const termRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node
+      if (yearDropdown && yearRef.current && !yearRef.current.contains(target)) {
+        setYearDropdown(false)
+      }
+      if (termDropdown && termRef.current && !termRef.current.contains(target)) {
+        setTermDropdown(false)
+        setSelectedTerm('First Term')
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [yearDropdown, termDropdown])
+
   return (
     <div className="flex h-screen bg-gray-50">
       <div className="w-96 bg-slate-900 border-r border-slate-800 flex flex-col rounded-r-3xl">
@@ -110,11 +129,11 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
         <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-8">
             <h1 className="text-2xl font-semibold text-gray-900">
-              {/* Welcome to our platform fique */}
+              Welcome to our platform fique
             </h1>
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
-                <div className="relative">
+                <div ref={yearRef} className="relative">
                   <button
                     className="flex items-center space-x-2 bg-white rounded-lg px-4 py-2 border border-gray-200 text-sm text-gray-600 font-medium"
                     onClick={() => setYearDropdown((open) => !open)}
@@ -136,7 +155,7 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
                     </div>
                   )}
                 </div>
-                <div className="relative">
+                <div ref={termRef} className="relative">
                   <button
                     className="flex items-center space-x-2 bg-white rounded-lg px-4 py-2 border border-gray-200 text-sm text-gray-600 font-medium"
                     onClick={() => setTermDropdown((open) => !open)}

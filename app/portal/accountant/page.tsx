@@ -10,7 +10,7 @@ import FeesManagementTable from "@/components/portal/fees-management-table"
 export default function AccountantDashboard() {
   return (
     <div className="p-10 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-8">Welcome to our platform John</h1>
+      {/* <h1 className="text-2xl font-semibold text-gray-900 mb-8">Welcome to our platform John</h1> */}
 
       <DashboardStats />
 

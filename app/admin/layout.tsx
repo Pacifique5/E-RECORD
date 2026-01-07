@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HeaderUserActions } from '@/components/HeaderUserActions';
@@ -95,6 +95,19 @@ const Header = () => {
   const [year, setYear] = useState(2025);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const years = [2023, 2024, 2025, 2026, 2027];
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+        setDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dropdownRef])
   const user = {
     name: 'Paci fique',
     role: 'Admin',
@@ -105,7 +118,7 @@ const Header = () => {
     <header className="flex items-center justify-between px-8 py-6 bg-white shadow-sm sticky top-0 z-30">
       <h1 className="text-2xl font-semibold">Welcome to our platform Admin</h1>
       <div className="flex items-center gap-4 relative">
-        <div className="relative">
+        <div ref={dropdownRef} className="relative">
           <button
             className="text-sm font-medium px-3 py-1 rounded hover:bg-gray-100 border border-gray-200"
             onClick={() => setDropdownOpen((open) => !open)}
