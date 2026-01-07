@@ -21,7 +21,7 @@ export default function Sidebar() {
   ], [])
 
   return (
-    <div className="w-[320px] bg-slate-900 border-r border-slate-800 rounded-r-3xl">
+    <div className="w-96 bg-slate-900 border-r border-slate-800 rounded-r-3xl">
       <div className="p-8">
         <Link href="/portal/accountant" className="text-3xl font-bold text-white">
           E-Record

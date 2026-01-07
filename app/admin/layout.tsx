@@ -58,7 +58,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-80 min-h-screen bg-slate-900 shadow-lg fixed top-0 left-0 z-40 h-full rounded-r-3xl">
+    <div className="w-96 min-h-screen bg-slate-900 shadow-lg fixed top-0 left-0 z-40 h-full rounded-r-3xl">
       <div className="p-6 flex flex-col gap-2">
         <h1 className="text-xl font-semibold text-white">E-Record</h1>
         <div className="bg-[#1A75FF] text-white px-4 py-1.5 rounded-md text-sm font-medium w-fit">
@@ -73,7 +73,7 @@ const Sidebar = () => {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${
+                  className={`flex items-center space-x-3 p-3 rounded-2xl text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-[#1A75FF] text-white'
                       : 'text-gray-300 hover:bg-slate-800 hover:text-white hover:translate-x-1'
@@ -143,7 +143,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-80">
+      <div className="flex-1 flex flex-col ml-96">
         <Header />
         <main className="flex-1 p-8">
           {children}
