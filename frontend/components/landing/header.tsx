@@ -18,13 +18,13 @@ export default function Header() {
                 Features
               </Link>
               <Link href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-                Contacts
+                Contact
               </Link>
             </nav>
 
-            <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-colors">
+            <Link href="/registration" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-colors">
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </div>

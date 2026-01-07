@@ -26,7 +26,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <p className="font-medium">Phone number</p>
-                  <p className="text-blue-100">+250788-888-888</p>
+                  <p className="text-blue-100">+25079-565-3123</p>  
                 </div>
               </div>
 
