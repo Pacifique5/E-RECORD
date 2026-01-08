@@ -7,7 +7,7 @@ import { apiFetch } from '@/lib/api';
 
 export default function VerifyPage() {
   const router = useRouter();
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState(['', '', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -19,7 +19,7 @@ export default function VerifyPage() {
       setCode(newCode);
 
       // Auto-focus next input
-      if (value && index < 5) {
+      if (value && index < 6) {
         const nextInput = document.getElementById(`code-${index + 1}`);
         nextInput?.focus();
       }
@@ -37,8 +37,8 @@ export default function VerifyPage() {
     e.preventDefault();
     const schoolCode = code.join('');
     
-    if (schoolCode.length !== 6) {
-      setError('Please enter a complete 6-character school code');
+    if (schoolCode.length !== 7) {
+      setError('Please enter a complete 7-character school code (e.g., SCH0001)');
       return;
     }
 
@@ -48,7 +48,9 @@ export default function VerifyPage() {
 
     try {
       // Check if school code exists and get status
+      console.log('Verifying school code:', schoolCode); // Debug log
       const response = await apiFetch(`/schools/code/${schoolCode}`);
+      console.log('API response:', response); // Debug log
       
       if (response.status === 'approved') {
         setSuccess(`🎉 Congratulations! Your school "${response.name}" has been approved! You can now login and access your headmaster portal.`);
@@ -61,10 +63,11 @@ export default function VerifyPage() {
         setError('Your school registration was rejected. Please contact support for more information.');
       }
     } catch (err: any) {
+      console.error('Verification error:', err); // Debug log
       if (err.status === 404) {
-        setError('School code not found. Please check your code or wait for admin approval.');
+        setError(`School code "${schoolCode}" not found. Please check your code or wait for admin approval.`);
       } else {
-        setError('Failed to verify school code. Please try again.');
+        setError(`Failed to verify school code. Error: ${err.message || 'Unknown error'}`);
       }
     } finally {
       setLoading(false);
@@ -76,7 +79,7 @@ export default function VerifyPage() {
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
         <h1 className="text-2xl font-bold text-center mb-4">Check Your School Code</h1>
         <p className="text-sm text-gray-600 text-center mb-8">
-          Enter the 6-character school code you received after admin approval.
+          Enter the 7-character school code you received after admin approval.
         </p>
         
         {error && (
@@ -92,21 +95,28 @@ export default function VerifyPage() {
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex justify-between gap-2">
-            {code.map((digit, index) => (
-              <input
-                key={index}
-                id={`code-${index}`}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleInputChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-xl font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                required
-              />
-            ))}
+          <div>
+            <label htmlFor="code-0" className="block text-sm font-medium text-gray-700 mb-2">
+              School Code
+            </label>
+            <div className="flex justify-center space-x-2 mb-2">
+              {code.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`code-${index}`}
+                  type="text"
+                  value={digit}
+                  onChange={(e) => handleInputChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  className="w-12 h-12 text-center text-lg font-mono border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  maxLength={1}
+                  required
+                />
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              Enter the 7-character code exactly as shown in the admin dashboard (e.g., SCH0001)
+            </p>
           </div>
 
           <button
@@ -137,7 +147,7 @@ export default function VerifyPage() {
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Submit school registration request</li>
             <li>• Admin reviews and approves your school</li>
-            <li>• You receive a 6-character school code (e.g., SCH001)</li>
+            <li>• You receive a 7-character school code (e.g., SCH0001)</li>
             <li>• Use this page to verify your approval status</li>
             <li>• Login with your credentials to access portal</li>
           </ul>

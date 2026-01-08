@@ -109,7 +109,7 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
     } catch (error: any) {
       console.error('Failed to accept school request:', error);
       setErrorMessage(error.message || 'Failed to accept school request');
-      setTimeout(() => setErrorMessage(null), 5000);
+      setTimeout(() => setErrorMessage(null), 10000);
     }
   };
 
@@ -131,7 +131,7 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
     } catch (error: any) {
       console.error('Failed to reject school request:', error);
       setErrorMessage(error.message || 'Failed to reject school request');
-      setTimeout(() => setErrorMessage(null), 5000);
+      setTimeout(() => setErrorMessage(null), 10000);
     }
   };
 
@@ -170,8 +170,46 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
       )}
       
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          ✅ {successMessage}
+        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg relative">
+          <div className="flex items-start justify-between">
+            <div className="flex">
+              <span className="text-lg mr-2">✅</span>
+              <div>
+                <strong>Success!</strong>
+                <div className="mt-1">{successMessage}</div>
+                {successMessage.includes('School code:') && (
+                  <div className="mt-3 p-2 bg-white border border-green-300 rounded">
+                    <div className="text-sm font-medium text-green-800 mb-1">
+                      Give this code to the headmaster:
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono text-lg font-bold text-green-900">
+                        {successMessage.match(/School code: (\w+)/)?.[1]}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const code = successMessage.match(/School code: (\w+)/)?.[1];
+                          if (code) navigator.clipboard.writeText(code);
+                        }}
+                        className="px-2 py-1 bg-green-200 text-green-800 text-xs rounded hover:bg-green-300"
+                      >
+                        Copy Code
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="text-green-600 hover:text-green-800 ml-4"
+              title="Close"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
       
@@ -254,26 +292,65 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
 };
 
 // Active Schools Table Component
-const ActiveSchoolsTable = ({ onViewInfo, onRemove }: any) => {
+const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
   const [showAll, setShowAll] = useState(false);
-  const schools = Array(20).fill({
-    name: 'Rwanda coding academy',
-    email: 'rca@ac.rw',
-    phone: '079888888',
-    location: 'Kigali Rwanda',
-    paymentStatus: 'Paid',
-    systemStatus: 'Active',
-    logo: '',
-  });
-  const visibleSchools = showAll ? schools : schools.slice(0, 5);
+  const [activeSchools, setActiveSchools] = useState<School[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchActiveSchools();
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(fetchActiveSchools, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Refresh when trigger changes (when school is approved)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchActiveSchools();
+    }
+  }, [refreshTrigger]);
+
+  const fetchActiveSchools = async () => {
+    try {
+      const data = await apiFetch('/schools');
+      setActiveSchools(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch active schools:', error);
+      setActiveSchools([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredSchools = activeSchools.filter(school =>
+    school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    school.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const visibleSchools = showAll ? filteredSchools : filteredSchools.slice(0, 5);
+
+  if (loading) {
+    return <div className="bg-white rounded-lg shadow-sm mt-8 p-6">Loading active schools...</div>;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm mt-8 p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold">Active Schools</h2>
-        <button onClick={() => setShowAll(v => !v)} className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">
-          {showAll ? 'Show less' : 'Load more'}
-        </button>
+        <h2 className="text-lg font-semibold">Active Schools ({activeSchools.length})</h2>
+        <div className="flex space-x-2">
+          <button 
+            onClick={fetchActiveSchools}
+            className="bg-gray-500 text-white px-4 py-2 rounded font-medium shadow hover:bg-gray-600 transition-colors"
+            disabled={loading}
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button onClick={() => setShowAll(v => !v)} className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">
+            {showAll ? 'Show less' : 'Load more'}
+          </button>
+        </div>
       </div>
       <div className="flex items-center justify-between mb-4">
         <div className="relative">
@@ -313,20 +390,47 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove }: any) => {
             </tr>
           </thead>
           <tbody>
-            {visibleSchools.map((school, index) => (
-              <tr key={index} className="border-b">
-                <td className="py-4 px-4">{school.name}</td>
-                <td className="py-4 px-4">{school.email}</td>
-                <td className="py-4 px-4">{school.phone}</td>
-                <td className="py-4 px-4">{school.location}</td>
-                <td className="py-4 px-4">
-                  <div className="flex space-x-2">
-                    <button className="px-4 py-1 bg-[#1A75FF] text-white rounded hover:bg-blue-600" onClick={() => onViewInfo(school)}>View</button>
-                    <button className="px-4 py-1 bg-[#F04438] text-white rounded hover:bg-red-600" onClick={() => onRemove(school)}>Remove</button>
-                  </div>
+            {visibleSchools.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  {activeSchools.length === 0 ? 'No active schools found' : 'No schools match your search'}
                 </td>
               </tr>
-            ))}
+            ) : (
+              visibleSchools.map((school) => (
+                <tr key={school.id} className="border-b">
+                  <td className="py-4 px-4">
+                    <div className="flex items-center">
+                      <span className="font-medium">{school.name}</span>
+                      <div className="ml-2 flex items-center space-x-2">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-mono">
+                          {school.code}
+                        </span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(school.code);
+                            // You could add a toast notification here
+                          }}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded hover:bg-blue-200"
+                          title="Copy school code"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">{school.email}</td>
+                  <td className="py-4 px-4">{school.phoneNumber || 'N/A'}</td>
+                  <td className="py-4 px-4">{`${school.city || ''} ${school.country || ''}`.trim() || school.address}</td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-2">
+                      <button className="px-4 py-1 bg-[#1A75FF] text-white rounded hover:bg-blue-600" onClick={() => onViewInfo(school)}>View</button>
+                      <button className="px-4 py-1 bg-[#F04438] text-white rounded hover:bg-red-600" onClick={() => onRemove(school)}>Deactivate</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -426,6 +530,7 @@ export default function SchoolsPage() {
     pendingRequests: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     fetchStats();
@@ -463,6 +568,7 @@ export default function SchoolsPage() {
   };
   const handleAccept = (school: any) => {
     fetchStats(); // Refresh stats immediately
+    setRefreshTrigger(prev => prev + 1); // Trigger active schools refresh
     setModalOpen(false);
   };
   const handleReject = (school: any) => {
@@ -495,6 +601,7 @@ export default function SchoolsPage() {
       <ActiveSchoolsTable
         onViewInfo={handleViewInfo}
         onRemove={handleRemove}
+        refreshTrigger={refreshTrigger}
       />
       <RegisteredSchoolsTable />
       <SchoolModal

@@ -55,8 +55,12 @@ export class SchoolsController {
     return this.schoolsService.findById(id);
   }
 
+  @Get('debug/all')
+  async getAllSchoolsDebug(): Promise<any[]> {
+    return this.schoolsService.getAllSchoolsDebug();
+  }
+
   @Get('code/:code')
-  @UseGuards(JwtAuthGuard)
   async findByCode(@Param('code') code: string): Promise<SchoolResponseDto> {
     return this.schoolsService.findByCode(code);
   }

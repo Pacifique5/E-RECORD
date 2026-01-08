@@ -17,9 +17,9 @@
 ### **Test 2: Headmaster Registration & School Request**
 1. **Open new browser/incognito**: `http://localhost:3000/registration`
 2. **Register Headmaster**:
-   - First Name: `John`
-   - Last Name: `Smith`
-   - Email: `john.smith@testschool.edu`
+   - First Name: `Joh`
+   - Last Name: `Smit`
+   - Email: `johnmith@testschool.edu`
    - Phone: `+250788123456`
    - Password: `password123`
    - Confirm Password: `password123`

@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
+import useAuth from '@/hooks/use-auth';
 
 export default function SchoolRegistrationPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -29,9 +31,14 @@ export default function SchoolRegistrationPage() {
     setError(null);
     setLoading(true);
     
+    if (!user) {
+      setError('You must be logged in to register a school');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      // For now, we'll send the school data without the logo
-      // In a real implementation, you'd upload the logo to a file storage service first
+      // Send school data with headmaster user ID
       const schoolData = {
         name,
         address,
@@ -40,7 +47,7 @@ export default function SchoolRegistrationPage() {
         country,
         phoneNumber: phone,
         email,
-        // logo: logoUrl, // Would be set after uploading the file
+        headmasterId: user.id, // Link school to current user
       };
 
       await apiFetch('/schools', {
@@ -48,7 +55,7 @@ export default function SchoolRegistrationPage() {
         body: JSON.stringify(schoolData),
       });
 
-      // Redirect to confirmation page instead of portal
+      // Redirect to confirmation page
       router.push('/registration/confirmation');
     } catch (err: any) {
       const msg = err?.body?.message || err?.message || 'Failed to submit school registration request';

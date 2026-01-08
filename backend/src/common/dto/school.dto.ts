@@ -32,6 +32,10 @@ export class CreateSchoolDto {
   @IsOptional()
   @IsString()
   logo?: string;
+
+  @IsOptional()
+  @IsString()
+  headmasterId?: string;
 }
 
 export class UpdateSchoolDto {

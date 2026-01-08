@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { School } from '../../entities/school.entity';
+import { User, UserRole } from '../../entities/user.entity';
 import { CreateSchoolDto, UpdateSchoolDto, SchoolResponseDto } from '../../common/dto';
 
 @Injectable()
@@ -9,19 +11,37 @@ export class SchoolsService {
   constructor(
     @InjectRepository(School)
     private schoolRepository: Repository<School>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   async create(createSchoolDto: CreateSchoolDto): Promise<SchoolResponseDto> {
+    const { headmasterId, ...schoolData } = createSchoolDto;
+    
     // Generate a temporary code for the request
     const tempCode = `REQ${Date.now()}`;
     
     const school = this.schoolRepository.create({
-      ...createSchoolDto,
+      ...schoolData,
       code: tempCode,
       status: 'pending', // Set as pending for admin approval
     });
-    await this.schoolRepository.save(school);
-    return this.toResponseDto(school);
+    
+    const savedSchool = await this.schoolRepository.save(school);
+    
+    // If headmasterId is provided, link the school to the headmaster
+    if (headmasterId) {
+      const headmaster = await this.userRepository.findOne({ 
+        where: { id: headmasterId } 
+      });
+      
+      if (headmaster) {
+        headmaster.school = savedSchool;
+        await this.userRepository.save(headmaster);
+      }
+    }
+    
+    return this.toResponseDto(savedSchool);
   }
 
   async findAll(): Promise<SchoolResponseDto[]> {
@@ -54,10 +74,8 @@ export class SchoolsService {
     school.code = schoolCode;
     await this.schoolRepository.save(school);
 
-    // TODO: Send notification/email to headmaster about approval
-    // For now, we'll just return the success message with the code
     return { 
-      message: `School request accepted successfully. School code: ${schoolCode}. The headmaster can now login and use the verify page to check status.` 
+      message: `School request accepted successfully. School code: ${schoolCode}. The headmaster can now login with their personal email and password.` 
     };
   }
 
@@ -104,13 +122,26 @@ export class SchoolsService {
   }
 
   async findByCode(code: string): Promise<SchoolResponseDto> {
+    console.log('Looking for school with code:', code); // Debug log
     const school = await this.schoolRepository.findOne({
       where: { code },
     });
+    console.log('Found school:', school ? school.name : 'Not found'); // Debug log
     if (!school) {
       throw new NotFoundException(`School with code ${code} not found`);
     }
     return this.toResponseDto(school);
+  }
+
+  async getAllSchoolsDebug(): Promise<any[]> {
+    const schools = await this.schoolRepository.find();
+    return schools.map(school => ({
+      id: school.id,
+      name: school.name,
+      code: school.code,
+      status: school.status,
+      isActive: school.isActive,
+    }));
   }
 
   async update(
