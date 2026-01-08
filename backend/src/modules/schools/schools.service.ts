@@ -39,7 +39,10 @@ export class SchoolsService {
   }
 
   async acceptSchoolRequest(id: string): Promise<{ message: string }> {
-    const school = await this.schoolRepository.findOne({ where: { id } });
+    const school = await this.schoolRepository.findOne({ 
+      where: { id },
+      relations: ['users']
+    });
     if (!school) {
       throw new NotFoundException(`School with ID ${id} not found`);
     }
@@ -50,7 +53,12 @@ export class SchoolsService {
     school.status = 'approved';
     school.code = schoolCode;
     await this.schoolRepository.save(school);
-    return { message: `School request accepted successfully. School code: ${schoolCode}` };
+
+    // TODO: Send notification/email to headmaster about approval
+    // For now, we'll just return the success message with the code
+    return { 
+      message: `School request accepted successfully. School code: ${schoolCode}. The headmaster can now login and use the verify page to check status.` 
+    };
   }
 
   async rejectSchoolRequest(id: string): Promise<{ message: string }> {

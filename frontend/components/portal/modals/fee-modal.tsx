@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
-import { apiFetch } from "../../../../lib/api"
+import { apiFetch } from "@/lib/api"
 
 interface Fee {
   id?: string

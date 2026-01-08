@@ -94,7 +94,10 @@ export function HeaderUserActions({
 
           <DropdownMenuSeparator className="dark:border-gray-700" />
 
-          <DropdownMenuItem className="cursor-pointer text-red-500 hover:text-red-600 dark:hover:bg-gray-700">
+          <DropdownMenuItem 
+            className="cursor-pointer text-red-500 hover:text-red-600 dark:hover:bg-gray-700"
+            onClick={handleLogout}
+          >
             <LogOut className="mr-2 size-4" />
             Log out
           </DropdownMenuItem>

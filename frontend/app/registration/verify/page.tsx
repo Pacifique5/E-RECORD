@@ -1,21 +1,109 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
 
 export default function VerifyPage() {
+  const router = useRouter();
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleInputChange = (index: number, value: string) => {
+    if (value.length <= 1) {
+      const newCode = [...code];
+      newCode[index] = value.toUpperCase();
+      setCode(newCode);
+
+      // Auto-focus next input
+      if (value && index < 5) {
+        const nextInput = document.getElementById(`code-${index + 1}`);
+        nextInput?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      const prevInput = document.getElementById(`code-${index - 1}`);
+      prevInput?.focus();
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const schoolCode = code.join('');
+    
+    if (schoolCode.length !== 6) {
+      setError('Please enter a complete 6-character school code');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      // Check if school code exists and get status
+      const response = await apiFetch(`/schools/code/${schoolCode}`);
+      
+      if (response.status === 'approved') {
+        setSuccess(`🎉 Congratulations! Your school "${response.name}" has been approved! You can now login and access your headmaster portal.`);
+        setTimeout(() => {
+          router.push('/registration/login');
+        }, 3000);
+      } else if (response.status === 'pending') {
+        setError('Your school registration is still pending admin approval. Please wait for notification.');
+      } else if (response.status === 'rejected') {
+        setError('Your school registration was rejected. Please contact support for more information.');
+      }
+    } catch (err: any) {
+      if (err.status === 404) {
+        setError('School code not found. Please check your code or wait for admin approval.');
+      } else {
+        setError('Failed to verify school code. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-4">We've Sent You a Verification Code!</h1>
-        <p className="text-sm text-gray-600 text-center mb-8">Check your inbox for a 6-digit code.</p>
+        <h1 className="text-2xl font-bold text-center mb-4">Check Your School Code</h1>
+        <p className="text-sm text-gray-600 text-center mb-8">
+          Enter the 6-character school code you received after admin approval.
+        </p>
         
-        <form className="space-y-6">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            {success}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-between gap-2">
-            {[...Array(6)].map((_, index) => (
+            {code.map((digit, index) => (
               <input
                 key={index}
+                id={`code-${index}`}
                 type="text"
                 maxLength={1}
-                className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={digit}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                className="w-12 h-12 text-center text-xl font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0"
                 required
               />
             ))}
@@ -23,19 +111,36 @@ export default function VerifyPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
           >
-            Verify my code
+            {loading ? 'Checking...' : 'Check School Status'}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-gray-600">
-            Didn't receive the code?{' '}
-            <button className="text-blue-600 hover:text-blue-700">
-              Resend
-            </button>
+            Don't have a school code yet?{' '}
+            <Link href="/registration/confirmation" className="text-blue-600 hover:text-blue-700">
+              Check approval status
+            </Link>
           </p>
+          <p className="text-sm text-gray-600">
+            <Link href="/registration/login" className="text-blue-600 hover:text-blue-700">
+              Back to Login
+            </Link>
+          </p>
+        </div>
+
+        <div className="mt-6 p-4 bg-blue-50 rounded-md">
+          <h3 className="text-sm font-medium text-blue-800 mb-2">How it works:</h3>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• Submit school registration request</li>
+            <li>• Admin reviews and approves your school</li>
+            <li>• You receive a 6-character school code (e.g., SCH001)</li>
+            <li>• Use this page to verify your approval status</li>
+            <li>• Login with your credentials to access portal</li>
+          </ul>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Search, Plus, Edit, Eye, AlertTriangle } from "lucide-react"
-import { apiFetch } from "../../lib/api"
+import { apiFetch } from "@/lib/api"
 
 interface InventoryItem {
   id: string

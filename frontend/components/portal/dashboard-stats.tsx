@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { DollarSign, CreditCard, TrendingUp, BarChart3 } from "lucide-react"
-import { apiFetch } from "../../lib/api"
+import { apiFetch } from "@/lib/api"
 
 export default function DashboardStats() {
   const [stats, setStats] = useState({

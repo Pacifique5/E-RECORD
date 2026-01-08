@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { apiFetch } from '../../lib/api';
+import { apiFetch } from '@/lib/api';
 
 const StatCard = ({ title, value, icon, trend }: { title: string; value: string; icon: string; trend?: string }) => (
   <div className="bg-white p-6 rounded-lg">

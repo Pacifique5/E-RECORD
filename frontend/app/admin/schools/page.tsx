@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { apiFetch } from '../../../lib/api';
+import { apiFetch } from '@/lib/api';
 import SchoolModal from "@/components/portal/modals/school-modal";
 
 interface School {
@@ -68,6 +68,8 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchoolRequests();
@@ -91,21 +93,45 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
 
   const handleAccept = async (school: School) => {
     try {
-      await apiFetch(`/schools/${school.id}/accept`, { method: 'POST' });
+      setSuccessMessage(null);
+      setErrorMessage(null);
+      
+      const response = await apiFetch(`/schools/${school.id}/accept`, { method: 'POST' });
+      
+      // Show success message with school code
+      setSuccessMessage(response.message || `School "${school.name}" approved successfully!`);
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
+      
       await fetchSchoolRequests(); // Refresh the list immediately
       onAccept(school);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to accept school request:', error);
+      setErrorMessage(error.message || 'Failed to accept school request');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
   const handleReject = async (school: School) => {
     try {
-      await apiFetch(`/schools/${school.id}/reject`, { method: 'POST' });
+      setSuccessMessage(null);
+      setErrorMessage(null);
+      
+      const response = await apiFetch(`/schools/${school.id}/reject`, { method: 'POST' });
+      
+      // Show success message
+      setSuccessMessage(response.message || `School "${school.name}" rejected successfully.`);
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
+      
       await fetchSchoolRequests(); // Refresh the list immediately
       onReject(school);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to reject school request:', error);
+      setErrorMessage(error.message || 'Failed to reject school request');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
@@ -140,6 +166,18 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
       {lastUpdated && (
         <div className="mb-4 text-sm text-gray-500">
           Last updated: {lastUpdated.toLocaleTimeString()}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+          ✅ {successMessage}
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          ❌ {errorMessage}
         </div>
       )}
       <div className="flex items-center justify-between mb-4">
