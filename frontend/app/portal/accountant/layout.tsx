@@ -6,6 +6,7 @@ import { Bell, LayoutGrid, DollarSign, FileText, BarChart2, Users2, Package, Fil
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HeaderUserActions } from '@/components/HeaderUserActions'
+import useAuth from '@/hooks/use-auth'
 import React, { useState, useRef, useEffect } from 'react'
 
 const navigation = [
@@ -58,8 +59,10 @@ const navigation = [
 
 export default function AccountantLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const user = {
-    name: 'fique paci',
+  const { user } = useAuth()
+  
+  const userInfo = {
+    name: user?.firstName || 'User',
     role: 'Accountant',
     avatar: '/mp.jpg',
   }
@@ -129,7 +132,12 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
         <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-8">
             <h1 className="text-2xl font-semibold text-gray-900">
-              Welcome to our platform fique
+              Welcome to our platform {user?.firstName || 'User'}
+              {user?.school && (
+                <div className="text-sm font-normal text-gray-600 mt-1">
+                  {user.school.name} - {user.school.code}
+                </div>
+              )}
             </h1>
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
@@ -179,7 +187,7 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <HeaderUserActions user={user} />
+                <HeaderUserActions user={userInfo} />
               </div>
             </div>
           </div>

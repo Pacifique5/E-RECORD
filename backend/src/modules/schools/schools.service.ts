@@ -5,6 +5,8 @@ import * as bcrypt from 'bcryptjs';
 import { School } from '../../entities/school.entity';
 import { User, UserRole } from '../../entities/user.entity';
 import { CreateSchoolDto, UpdateSchoolDto, SchoolResponseDto } from '../../common/dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../../entities/notification.entity';
 
 @Injectable()
 export class SchoolsService {
@@ -13,6 +15,7 @@ export class SchoolsService {
     private schoolRepository: Repository<School>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createSchoolDto: CreateSchoolDto): Promise<SchoolResponseDto> {
@@ -41,7 +44,33 @@ export class SchoolsService {
       }
     }
     
+    // Create notification for all admin users about new school registration
+    await this.createSchoolRegistrationNotifications(savedSchool);
+    
     return this.toResponseDto(savedSchool);
+  }
+
+  private async createSchoolRegistrationNotifications(school: School): Promise<void> {
+    try {
+      // Find all admin users
+      const adminUsers = await this.userRepository.find({
+        where: { role: UserRole.ADMIN }
+      });
+
+      // Create notification for each admin
+      for (const admin of adminUsers) {
+        await this.notificationsService.createNotification(
+          admin.id,
+          'New School Registration',
+          `${school.name} has submitted a registration request and is waiting for approval.`,
+          NotificationType.SYSTEM,
+          school.id
+        );
+      }
+    } catch (error) {
+      console.error('Failed to create school registration notifications:', error);
+      // Don't throw error to avoid breaking the school creation process
+    }
   }
 
   async findAll(): Promise<SchoolResponseDto[]> {
@@ -159,14 +188,25 @@ export class SchoolsService {
   }
 
   async delete(id: string): Promise<{ message: string }> {
-    const school = await this.schoolRepository.findOne({ where: { id } });
+    const school = await this.schoolRepository.findOne({ 
+      where: { id },
+      relations: ['users']
+    });
     if (!school) {
       throw new NotFoundException(`School with ID ${id} not found`);
     }
 
-    school.isActive = false;
-    await this.schoolRepository.save(school);
-    return { message: 'School deactivated successfully' };
+    // First, remove the school association from all users
+    if (school.users && school.users.length > 0) {
+      for (const user of school.users) {
+        user.school = null as any; // TypeScript workaround for nullable relation
+        await this.userRepository.save(user);
+      }
+    }
+
+    // Then remove the school completely
+    await this.schoolRepository.remove(school);
+    return { message: 'School removed successfully' };
   }
 
   private toResponseDto(school: School): SchoolResponseDto {

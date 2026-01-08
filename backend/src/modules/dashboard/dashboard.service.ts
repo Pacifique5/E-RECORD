@@ -22,34 +22,60 @@ export class DashboardService {
     private payrollRepository: Repository<Payroll>,
   ) {}
 
-  async getDashboardStats() {
-    const [totalUsers, totalSchools, fees, expenses, payrolls] = await Promise.all([
-      this.userRepository.count(),
-      this.schoolRepository.count(),
-      this.feeRepository.find(),
-      this.expenseRepository.find(),
-      this.payrollRepository.find(),
-    ]);
+  async getDashboardStats(schoolId?: string | null) {
+    if (!schoolId) {
+      // Admin view - all data
+      const [totalUsers, totalSchools, fees, expenses, payrolls] = await Promise.all([
+        this.userRepository.count(),
+        this.schoolRepository.count(),
+        this.feeRepository.find(),
+        this.expenseRepository.find(),
+        this.payrollRepository.find(),
+      ]);
 
-    const totalFees = fees.reduce((sum, fee) => sum + fee.amountPaid, 0);
-    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const totalPayrolls = payrolls.reduce((sum, payroll) => sum + payroll.netSalary, 0);
+      const totalFees = fees.reduce((sum, fee) => sum + fee.amountPaid, 0);
+      const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      const totalPayrolls = payrolls.reduce((sum, payroll) => sum + payroll.netSalary, 0);
 
-    return {
-      totalUsers,
-      totalSchools,
-      totalFees,
-      totalExpenses,
-      totalPayrolls,
-      netIncome: totalFees - totalExpenses - totalPayrolls,
-    };
+      return {
+        totalUsers,
+        totalSchools,
+        totalFees,
+        totalExpenses,
+        totalPayrolls,
+        netIncome: totalFees - totalExpenses - totalPayrolls,
+      };
+    } else {
+      // School-specific view - filtered data
+      const [schoolUsers, fees, expenses, payrolls] = await Promise.all([
+        this.userRepository.count({ where: { school: { id: schoolId } } }),
+        this.feeRepository.find({ where: { school: { id: schoolId } } }),
+        this.expenseRepository.find({ where: { school: { id: schoolId } } }),
+        this.payrollRepository.find({ where: { school: { id: schoolId } } }),
+      ]);
+
+      const totalFees = fees.reduce((sum, fee) => sum + fee.amountPaid, 0);
+      const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      const totalPayrolls = payrolls.reduce((sum, payroll) => sum + payroll.netSalary, 0);
+
+      return {
+        totalUsers: schoolUsers,
+        totalSchools: 1, // Current school only
+        totalFees,
+        totalExpenses,
+        totalPayrolls,
+        netIncome: totalFees - totalExpenses - totalPayrolls,
+      };
+    }
   }
 
-  async getFinancialSummary() {
+  async getFinancialSummary(schoolId?: string | null) {
+    const whereClause = schoolId ? { school: { id: schoolId } } : {};
+    
     const [fees, expenses, payrolls] = await Promise.all([
-      this.feeRepository.find(),
-      this.expenseRepository.find(),
-      this.payrollRepository.find(),
+      this.feeRepository.find({ where: whereClause }),
+      this.expenseRepository.find({ where: whereClause }),
+      this.payrollRepository.find({ where: whereClause }),
     ]);
 
     const paidFees = fees.filter(fee => fee.status === 'paid');
@@ -69,10 +95,12 @@ export class DashboardService {
     };
   }
 
-  async getIncomeExpensesData() {
+  async getIncomeExpensesData(schoolId?: string | null) {
+    const whereClause = schoolId ? { school: { id: schoolId } } : {};
+    
     const [fees, expenses] = await Promise.all([
-      this.feeRepository.find(),
-      this.expenseRepository.find(),
+      this.feeRepository.find({ where: whereClause }),
+      this.expenseRepository.find({ where: whereClause }),
     ]);
 
     // Group by month for the last 6 months
@@ -110,8 +138,9 @@ export class DashboardService {
     return monthlyData;
   }
 
-  async getPayrollTrendData() {
-    const payrolls = await this.payrollRepository.find();
+  async getPayrollTrendData(schoolId?: string | null) {
+    const whereClause = schoolId ? { school: { id: schoolId } } : {};
+    const payrolls = await this.payrollRepository.find({ where: whereClause });
 
     // Group by month for the last 6 months
     const monthlyData: Array<{ month: string; amount: number }> = [];

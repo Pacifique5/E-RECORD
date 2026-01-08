@@ -122,6 +122,12 @@ export class UsersService {
       phoneNumber: user.phoneNumber,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      school: user.school ? {
+        id: user.school.id,
+        name: user.school.name,
+        code: user.school.code,
+        status: user.school.status,
+      } : null,
     };
   }
 }

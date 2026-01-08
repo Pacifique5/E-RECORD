@@ -33,8 +33,8 @@ export default function LoginPage() {
           // School pending approval - show waiting page
           router.push('/registration/confirmation');
         } else if (authUser.school.status === 'approved') {
-          // School approved - access headmaster portal
-          router.push('/portal/headmaster');
+          // School approved - require code verification before dashboard access
+          router.push('/registration/verify');
         } else if (authUser.school.status === 'rejected') {
           // School rejected - show rejection message and allow re-application
           setError('Your school registration was rejected. Please contact support or submit a new application.');

@@ -4,9 +4,29 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HeaderUserActions } from '@/components/HeaderUserActions';
+import { apiFetch } from '@/lib/api';
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  // Fetch notification count
+  const fetchNotificationCount = async () => {
+    try {
+      const data = await apiFetch('/notifications/count');
+      setNotificationCount(data.unread || 0);
+    } catch (error) {
+      console.error('Failed to fetch notification count:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotificationCount();
+    
+    // Update notification count every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuItems = [
     {
@@ -43,7 +63,8 @@ const Sidebar = () => {
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 22C10.8954 22 10 21.1046 10 20H14C14 21.1046 13.1046 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-      )
+      ),
+      badge: notificationCount
     },
     {
       name: "Settings",
@@ -73,14 +94,21 @@ const Sidebar = () => {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center space-x-3 p-3 rounded-2xl text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center justify-between space-x-3 p-3 rounded-2xl text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-[#1A75FF] text-white'
                       : 'text-gray-300 hover:bg-slate-800 hover:text-white hover:translate-x-1'
                   }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
-                  <span className="font-medium">{item.name}</span>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="font-medium">{item.name}</span>
+                  </div>
+                  {item.badge && item.badge > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
                 </Link>
               </li>
             );

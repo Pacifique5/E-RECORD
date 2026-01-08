@@ -61,115 +61,154 @@ const StatCard = ({ title, value, icon, trend }: { title: string; value: string;
   </div>
 );
 
-const SchoolRequestTable = () => (
-  <div className="bg-white rounded-lg p-6 mt-8">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-lg font-semibold">Schools Request</h2>
-      <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
-    </div>
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="text-left border-b border-gray-200">
-            <th className="pb-3 text-sm font-medium text-gray-600">School Names</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Email</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Phone Number</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Location</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...Array(5)].map((_, i) => (
-            <tr key={i} className="border-b border-gray-100">
-              <td className="py-4 text-sm">Rwanda coding academy</td>
-              <td className="py-4 text-sm">rca@ac.rw</td>
-              <td className="py-4 text-sm">0798888888</td>
-              <td className="py-4 text-sm">Kigali Rwanda</td>
-              <td className="py-4">
-                <div className="flex gap-2">
-                  <button className="px-4 py-1 bg-[#1A75FF] text-white text-sm rounded-md hover:bg-blue-700">View</button>
-                  <button className="px-4 py-1 bg-[#00BA34] text-white text-sm rounded-md hover:bg-green-700">Accept</button>
-                  <button className="px-4 py-1 bg-[#F04438] text-white text-sm rounded-md hover:bg-red-700">Reject</button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
-
-const RegisteredSchoolsTable = () => (
-  <div className="bg-white rounded-lg p-6 mt-8">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-lg font-semibold">Registered Schools</h2>
-      <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
-    </div>
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="text-left border-b border-gray-200">
-            <th className="pb-3 text-sm font-medium text-gray-600">School Names</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Email</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Subscription amount</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Joining Date</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...Array(5)].map((_, i) => (
-            <tr key={i} className="border-b border-gray-100">
-              <td className="py-4 text-sm">Rwanda coding academy</td>
-              <td className="py-4 text-sm">rca@ac.rw</td>
-              <td className="py-4 text-sm">850000</td>
-              <td className="py-4 text-sm">10/5/2025</td>
-              <td className="py-4">
-                <span className="text-[#1A75FF] text-sm">Paid</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
-
-const ActiveUsersTable = () => (
-  <div className="bg-white rounded-lg p-6 mt-8">
-    <div className="flex justify-between items-center mb-6">
-      <div>
-        <h2 className="text-lg font-semibold">Active Users</h2>
-        <p className="text-sm text-gray-600">Total users: 1000000</p>
+const SchoolRequestTable = ({ requests }: { requests: any[] }) => {
+  // Ensure requests is always an array
+  const requestsList = Array.isArray(requests) ? requests : [];
+  
+  return (
+    <div className="bg-white rounded-lg p-6 mt-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-semibold">Schools Request</h2>
+        <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
       </div>
-      <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
-    </div>
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="text-left border-b border-gray-200">
-            <th className="pb-3 text-sm font-medium text-gray-600">User Name</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">School</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Role</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Joining Date</th>
-            <th className="pb-3 text-sm font-medium text-gray-600">Email</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...Array(5)].map((_, i) => (
-            <tr key={i} className="border-b border-gray-100">
-              <td className="py-4 text-sm">Dushimire Aine</td>
-              <td className="py-4 text-sm">Rwanda coding academy</td>
-              <td className="py-4 text-sm">Accountant</td>
-              <td className="py-4 text-sm">10/5/2025</td>
-              <td className="py-4 text-sm">ainedushimire@ac.rw</td>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="text-left border-b border-gray-200">
+              <th className="pb-3 text-sm font-medium text-gray-600">School Names</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Email</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Phone Number</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Location</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {requestsList.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  No pending school requests
+                </td>
+              </tr>
+            ) : (
+              requestsList.slice(0, 5).map((school) => (
+                <tr key={school.id} className="border-b border-gray-100">
+                  <td className="py-4 text-sm">{school.name}</td>
+                  <td className="py-4 text-sm">{school.email}</td>
+                  <td className="py-4 text-sm">{school.phoneNumber}</td>
+                  <td className="py-4 text-sm">{school.city}, {school.country}</td>
+                  <td className="py-4">
+                    <div className="flex gap-2">
+                      <button className="px-4 py-1 bg-[#1A75FF] text-white text-sm rounded-md hover:bg-blue-700">View</button>
+                      <button className="px-4 py-1 bg-[#00BA34] text-white text-sm rounded-md hover:bg-green-700">Accept</button>
+                      <button className="px-4 py-1 bg-[#F04438] text-white text-sm rounded-md hover:bg-red-700">Reject</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+const RegisteredSchoolsTable = ({ schools }: { schools: any[] }) => {
+  // Ensure schools is always an array
+  const schoolsList = Array.isArray(schools) ? schools : [];
+  
+  return (
+    <div className="bg-white rounded-lg p-6 mt-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-semibold">Registered Schools</h2>
+        <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="text-left border-b border-gray-200">
+              <th className="pb-3 text-sm font-medium text-gray-600">School Names</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Email</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">School Code</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Joining Date</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {schoolsList.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  No registered schools
+                </td>
+              </tr>
+            ) : (
+              schoolsList.slice(0, 5).map((school) => (
+                <tr key={school.id} className="border-b border-gray-100">
+                  <td className="py-4 text-sm">{school.name}</td>
+                  <td className="py-4 text-sm">{school.email}</td>
+                  <td className="py-4 text-sm font-mono text-blue-600">{school.code}</td>
+                  <td className="py-4 text-sm">{new Date(school.createdAt).toLocaleDateString()}</td>
+                  <td className="py-4">
+                    <span className="text-[#00BA34] text-sm capitalize">{school.status}</span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const ActiveUsersTable = ({ users, totalUsers }: { users: any[]; totalUsers: number }) => {
+  // Ensure users is always an array
+  const usersList = Array.isArray(users) ? users : [];
+  
+  return (
+    <div className="bg-white rounded-lg p-6 mt-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-lg font-semibold">Active Users</h2>
+          <p className="text-sm text-gray-600">Total users: {totalUsers}</p>
+        </div>
+        <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="text-left border-b border-gray-200">
+              <th className="pb-3 text-sm font-medium text-gray-600">User Name</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">School</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Role</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Joining Date</th>
+              <th className="pb-3 text-sm font-medium text-gray-600">Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usersList.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  No active users
+                </td>
+              </tr>
+            ) : (
+              usersList.slice(0, 5).map((user) => (
+                <tr key={user.id} className="border-b border-gray-100">
+                  <td className="py-4 text-sm">{user.firstName} {user.lastName}</td>
+                  <td className="py-4 text-sm">{user.school?.name || 'No School'}</td>
+                  <td className="py-4 text-sm capitalize">{user.role}</td>
+                  <td className="py-4 text-sm">{new Date(user.createdAt).toLocaleDateString()}</td>
+                  <td className="py-4 text-sm">{user.email}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
 
 const UserGrowthChart = ({ data }: { data: any[] }) => (
   <div className="bg-white rounded-lg p-6 mt-8">
@@ -271,6 +310,9 @@ export default function AdminDashboard() {
     paymentDistribution: [],
     userActivity: []
   });
+  const [schoolRequests, setSchoolRequests] = useState([]);
+  const [registeredSchools, setRegisteredSchools] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -284,6 +326,40 @@ export default function AdminDashboard() {
           totalUsers: statsData.totalUsers || 0,
           totalPayments: statsData.totalFees || 0,
         });
+
+        // Fetch school requests (pending schools)
+        try {
+          const schoolRequestsData = await apiFetch('/schools/requests');
+          setSchoolRequests(Array.isArray(schoolRequestsData) ? schoolRequestsData : []);
+        } catch (requestError) {
+          console.error('Failed to fetch school requests:', requestError);
+          setSchoolRequests([]);
+        }
+
+        // Fetch registered schools (approved schools)
+        try {
+          const registeredSchoolsData = await apiFetch('/schools');
+          setRegisteredSchools(Array.isArray(registeredSchoolsData) ? registeredSchoolsData : []);
+        } catch (schoolError) {
+          console.error('Failed to fetch registered schools:', schoolError);
+          setRegisteredSchools([]);
+        }
+
+        // Fetch active users
+        try {
+          const activeUsersData = await apiFetch('/users');
+          // Handle both array and paginated response formats
+          if (activeUsersData && activeUsersData.users) {
+            // Paginated response
+            setActiveUsers(Array.isArray(activeUsersData.users) ? activeUsersData.users : []);
+          } else {
+            // Direct array response
+            setActiveUsers(Array.isArray(activeUsersData) ? activeUsersData : []);
+          }
+        } catch (userError) {
+          console.error('Failed to fetch users:', userError);
+          setActiveUsers([]);
+        }
 
         // Mock data for charts (you can replace with real API calls)
         setDashboardData({
@@ -367,9 +443,9 @@ export default function AdminDashboard() {
         <UserActivityChart data={dashboardData.userActivity} />
       </div>
 
-      <SchoolRequestTable />
-      <RegisteredSchoolsTable />
-      <ActiveUsersTable />
+      <SchoolRequestTable requests={schoolRequests} />
+      <RegisteredSchoolsTable schools={registeredSchools} />
+      <ActiveUsersTable users={activeUsers} totalUsers={stats.totalUsers} />
     </div>
   );
 } 

@@ -27,17 +27,15 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(
-        initialData || {
-          name: "",
-          email: "",
-          phone: "",
-          location: "",
-          paymentStatus: "",
-          systemStatus: "Active",
-          logo: "",
-        }
-      )
+      setFormData({
+        name: initialData?.name || "",
+        email: initialData?.email || "",
+        phone: initialData?.phoneNumber || initialData?.phone || "",
+        location: initialData?.address || initialData?.location || `${initialData?.city || ""}, ${initialData?.country || ""}`.replace(", ", initialData?.city && initialData?.country ? ", " : ""),
+        paymentStatus: initialData?.paymentStatus || "Pending",
+        systemStatus: initialData?.status || initialData?.systemStatus || "Active",
+        logo: initialData?.logo || "",
+      })
     }
   }, [isOpen, initialData])
 
@@ -67,7 +65,7 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
               <input
                 type="text"
                 name="name"
-                value={formData.name}
+                value={formData.name || ""}
                 readOnly={isReadOnly}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -77,7 +75,7 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
               <input
                 type="text"
                 name="email"
-                value={formData.email}
+                value={formData.email || ""}
                 readOnly={isReadOnly}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -87,7 +85,7 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
               <input
                 type="text"
                 name="phone"
-                value={formData.phone}
+                value={formData.phone || ""}
                 readOnly={isReadOnly}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -97,7 +95,7 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
               <input
                 type="text"
                 name="location"
-                value={formData.location}
+                value={formData.location || ""}
                 readOnly={isReadOnly}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -107,7 +105,7 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
               <input
                 type="text"
                 name="paymentStatus"
-                value={formData.paymentStatus}
+                value={formData.paymentStatus || ""}
                 readOnly={isReadOnly}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -118,7 +116,7 @@ export default function SchoolModal({ isOpen, mode, onClose, initialData, onAcce
                 <input
                   type="text"
                   name="systemStatus"
-                  value={formData.systemStatus}
+                  value={formData.systemStatus || ""}
                   readOnly={isReadOnly}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />

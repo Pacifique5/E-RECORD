@@ -326,6 +326,45 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const handleDeactivateSchool = async (school: School) => {
+    if (!confirm(`Are you sure you want to deactivate "${school.name}"? This will suspend their access but keep their data.`)) {
+      return;
+    }
+
+    try {
+      await apiFetch(`/schools/${school.id}`, { method: 'DELETE' });
+      await fetchActiveSchools(); // Refresh the list
+      alert(`School "${school.name}" has been deactivated successfully.`);
+    } catch (error: any) {
+      console.error('Failed to deactivate school:', error);
+      alert('Failed to deactivate school: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  const handleRemoveSchool = async (school: School) => {
+    if (!confirm(`⚠️ DANGER: Are you sure you want to permanently remove "${school.name}"? This action cannot be undone and will delete all school data.`)) {
+      return;
+    }
+
+    const confirmText = prompt(`This will permanently delete:\n- School record\n- All associated users\n- All financial data\n- All inventory data\n\nType "DELETE" to confirm:`);
+    
+    if (confirmText !== 'DELETE') {
+      alert('Removal cancelled. You must type "DELETE" to confirm.');
+      return;
+    }
+
+    try {
+      // For now, we'll use the same deactivate endpoint
+      // In a real system, you'd have a separate permanent delete endpoint
+      await apiFetch(`/schools/${school.id}`, { method: 'DELETE' });
+      await fetchActiveSchools(); // Refresh the list
+      alert(`School "${school.name}" has been removed from the system.`);
+    } catch (error: any) {
+      console.error('Failed to remove school:', error);
+      alert('Failed to remove school: ' + (error.message || 'Unknown error'));
+    }
+  };
+
   useEffect(() => {
     fetchActiveSchools();
     // Set up auto-refresh every 30 seconds

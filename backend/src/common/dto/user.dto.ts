@@ -54,4 +54,10 @@ export class UserResponseDto {
   phoneNumber?: string;
   isActive: boolean;
   createdAt: Date;
+  school?: {
+    id: string;
+    name: string;
+    code: string;
+    status: string;
+  } | null;
 }

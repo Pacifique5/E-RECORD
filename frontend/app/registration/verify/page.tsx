@@ -53,10 +53,10 @@ export default function VerifyPage() {
       console.log('API response:', response); // Debug log
       
       if (response.status === 'approved') {
-        setSuccess(`🎉 Congratulations! Your school "${response.name}" has been approved! You can now login and access your headmaster portal.`);
+        setSuccess(`🎉 Congratulations! Your school "${response.name}" has been approved! Redirecting to your dashboard...`);
         setTimeout(() => {
-          router.push('/registration/login');
-        }, 3000);
+          router.push('/portal/headmaster');
+        }, 2000);
       } else if (response.status === 'pending') {
         setError('Your school registration is still pending admin approval. Please wait for notification.');
       } else if (response.status === 'rejected') {
