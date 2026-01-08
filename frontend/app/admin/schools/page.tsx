@@ -276,9 +276,37 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
                   <td className="py-4 px-4">{`${school.city || ''} ${school.country || ''}`.trim() || school.address}</td>
                   <td className="py-4 px-4">
                     <div className="flex space-x-2">
-                      <button className="px-4 py-1 bg-[#1A75FF] text-white rounded hover:bg-blue-600" onClick={() => onViewRequest(school)}>View</button>
-                      <button className="px-4 py-1 bg-[#00BA34] text-white rounded hover:bg-green-600" onClick={() => handleAccept(school)}>Accept</button>
-                      <button className="px-4 py-1 bg-[#F04438] text-white rounded hover:bg-red-600" onClick={() => handleReject(school)}>Reject</button>
+                      <button 
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors flex items-center space-x-1" 
+                        onClick={() => onViewRequest(school)}
+                        title="View school details"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span>View</span>
+                      </button>
+                      <button 
+                        className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors flex items-center space-x-1" 
+                        onClick={() => handleAccept(school)}
+                        title="Approve school request"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Approve</span>
+                      </button>
+                      <button 
+                        className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors flex items-center space-x-1" 
+                        onClick={() => handleReject(school)}
+                        title="Reject school request"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Reject</span>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -424,8 +452,37 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
                   <td className="py-4 px-4">{`${school.city || ''} ${school.country || ''}`.trim() || school.address}</td>
                   <td className="py-4 px-4">
                     <div className="flex space-x-2">
-                      <button className="px-4 py-1 bg-[#1A75FF] text-white rounded hover:bg-blue-600" onClick={() => onViewInfo(school)}>View</button>
-                      <button className="px-4 py-1 bg-[#F04438] text-white rounded hover:bg-red-600" onClick={() => onRemove(school)}>Deactivate</button>
+                      <button 
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors flex items-center space-x-1" 
+                        onClick={() => onViewInfo(school)}
+                        title="View school details"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span>View</span>
+                      </button>
+                      <button 
+                        className="px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600 transition-colors flex items-center space-x-1" 
+                        onClick={() => handleDeactivateSchool(school)}
+                        title="Deactivate school"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                        </svg>
+                        <span>Deactivate</span>
+                      </button>
+                      <button 
+                        className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors flex items-center space-x-1" 
+                        onClick={() => handleRemoveSchool(school)}
+                        title="Remove school permanently"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Remove</span>
+                      </button>
                     </div>
                   </td>
                 </tr>
