@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ValidationPipe,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -27,8 +28,20 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll(): Promise<UserResponseDto[]> {
-    return this.usersService.findAll();
+  async findAll(
+    @Query('role') role?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<{
+    users: UserResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const pageNum = parseInt(page || '1') || 1;
+    const limitNum = parseInt(limit || '10') || 10;
+    return this.usersService.findAll(role, pageNum, limitNum);
   }
 
   @Get(':id')

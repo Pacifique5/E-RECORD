@@ -31,6 +31,24 @@ export class SchoolsController {
     return this.schoolsService.findAll();
   }
 
+  @Get('requests')
+  @UseGuards(JwtAuthGuard)
+  async getSchoolRequests(): Promise<SchoolResponseDto[]> {
+    return this.schoolsService.getSchoolRequests();
+  }
+
+  @Post(':id/accept')
+  @UseGuards(JwtAuthGuard)
+  async acceptSchoolRequest(@Param('id') id: string): Promise<{ message: string }> {
+    return this.schoolsService.acceptSchoolRequest(id);
+  }
+
+  @Post(':id/reject')
+  @UseGuards(JwtAuthGuard)
+  async rejectSchoolRequest(@Param('id') id: string): Promise<{ message: string }> {
+    return this.schoolsService.rejectSchoolRequest(id);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findById(@Param('id') id: string): Promise<SchoolResponseDto> {

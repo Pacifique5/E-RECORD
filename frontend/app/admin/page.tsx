@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import { apiFetch } from '../../lib/api';
 
 const StatCard = ({ title, value, icon, trend }: { title: string; value: string; icon: string; trend?: string }) => (
   <div className="bg-white p-6 rounded-lg">
@@ -259,6 +260,11 @@ const UserActivityChart = ({ data }: { data: any[] }) => (
 );
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    totalSchools: 0,
+    totalUsers: 0,
+    totalPayments: 0,
+  })
   const [dashboardData, setDashboardData] = useState({
     userGrowth: [],
     schoolRegistrations: [],
@@ -271,13 +277,48 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch('/api/dashboard');
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
-        }
-        const data = await response.json();
-        setDashboardData(data);
+        // Fetch dashboard stats
+        const statsData = await apiFetch('/dashboard/stats');
+        setStats({
+          totalSchools: statsData.totalSchools || 0,
+          totalUsers: statsData.totalUsers || 0,
+          totalPayments: statsData.totalFees || 0,
+        });
+
+        // Mock data for charts (you can replace with real API calls)
+        setDashboardData({
+          userGrowth: [
+            { month: 'Jan', users: 100 },
+            { month: 'Feb', users: 150 },
+            { month: 'Mar', users: 200 },
+            { month: 'Apr', users: 280 },
+            { month: 'May', users: 350 },
+            { month: 'Jun', users: 420 },
+          ],
+          schoolRegistrations: [
+            { month: 'Jan', schools: 5 },
+            { month: 'Feb', schools: 8 },
+            { month: 'Mar', schools: 12 },
+            { month: 'Apr', schools: 15 },
+            { month: 'May', schools: 18 },
+            { month: 'Jun', schools: 22 },
+          ],
+          paymentDistribution: [
+            { name: 'Tuition', value: 60 },
+            { name: 'Transport', value: 25 },
+            { name: 'Meals', value: 15 },
+          ],
+          userActivity: [
+            { month: 'Jan', students: 80, teachers: 15, admins: 5 },
+            { month: 'Feb', students: 120, teachers: 20, admins: 8 },
+            { month: 'Mar', students: 160, teachers: 25, admins: 10 },
+            { month: 'Apr', students: 200, teachers: 30, admins: 12 },
+            { month: 'May', students: 250, teachers: 35, admins: 15 },
+            { month: 'Jun', students: 300, teachers: 40, admins: 18 },
+          ]
+        });
       } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
@@ -286,6 +327,14 @@ export default function AdminDashboard() {
 
     fetchDashboardData();
   }, []);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-RW', {
+      style: 'currency',
+      currency: 'RWF',
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
 
   if (loading) {
     return (
@@ -306,9 +355,9 @@ export default function AdminDashboard() {
   return (
     <div className="font-inter">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total School" value="100" icon="school" trend="15%" />
-        <StatCard title="Total Users" value="1000000" icon="users" trend="15%" />
-        <StatCard title="Total Payments" value="1000000 Rwf" icon="payments" trend="15%" />
+        <StatCard title="Total School" value={stats.totalSchools.toString()} icon="school" trend="15%" />
+        <StatCard title="Total Users" value={stats.totalUsers.toString()} icon="users" trend="15%" />
+        <StatCard title="Total Payments" value={formatCurrency(stats.totalPayments)} icon="payments" trend="15%" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">

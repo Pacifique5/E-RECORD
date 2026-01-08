@@ -59,6 +59,16 @@ export class FinancialController {
     return this.financialService.deleteFee(id);
   }
 
+  @Get('fees/stats')
+  async getFeeStats(): Promise<{
+    totalPaid: number;
+    totalUnpaid: number;
+    totalStudentsPaid: number;
+    totalStudentsUnpaid: number;
+  }> {
+    return this.financialService.getFeeStats();
+  }
+
   // EXPENSE ENDPOINTS
   @Post('expenses')
   async createExpense(

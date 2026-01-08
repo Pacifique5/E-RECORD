@@ -3,10 +3,6 @@ import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 export class CreateSchoolDto {
   @IsString()
   @IsNotEmpty()
-  code: string;
-
-  @IsString()
-  @IsNotEmpty()
   name: string;
 
   @IsString()
@@ -32,6 +28,10 @@ export class CreateSchoolDto {
   @IsOptional()
   @IsString()
   email?: string;
+
+  @IsOptional()
+  @IsString()
+  logo?: string;
 }
 
 export class UpdateSchoolDto {
@@ -75,5 +75,6 @@ export class SchoolResponseDto {
   phoneNumber?: string;
   email?: string;
   isActive: boolean;
+  status: string;
   createdAt: Date;
 }

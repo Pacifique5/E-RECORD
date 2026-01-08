@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import useAuth from "@/hooks/use-auth";
 
 export function HeaderUserActions({
   user,
@@ -21,6 +23,13 @@ export function HeaderUserActions({
     avatar: string;
   };
 }) {
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/landing');
+  };
   return (
     <div className="max-w-64">
       <DropdownMenu>

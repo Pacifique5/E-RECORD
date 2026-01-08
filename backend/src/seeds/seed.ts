@@ -43,23 +43,26 @@ async function runSeed() {
     console.log('Created default school');
   }
 
-  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@erecord.local';
+  // Create admin user with specified credentials
+  const adminEmail = 'admin@gmail.com';
+  const adminPassword = 'admin123';
+  
   const adminExists = await userRepo.findOne({ where: { email: adminEmail } });
   if (!adminExists) {
-    const hashed = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD || 'Admin123!', 10);
+    const hashed = await bcrypt.hash(adminPassword, 10);
     const admin = userRepo.create({
       email: adminEmail,
       password: hashed,
       firstName: 'System',
-      lastName: 'Admin',
+      lastName: 'Administrator',
       role: UserRole.ADMIN,
       isActive: true,
-      school,
-    } as any);
+      // Don't set school for admin - it's nullable
+    });
     await userRepo.save(admin);
-    console.log(`Created admin user: ${adminEmail}`);
+    console.log(`✅ Created admin user: ${adminEmail} with password: ${adminPassword}`);
   } else {
-    console.log('Admin user already exists');
+    console.log('⚠️  Admin user already exists');
   }
 
   await AppDataSource.destroy();

@@ -14,7 +14,7 @@ export enum UserRole {
   ADMIN = 'admin',
   HEADMASTER = 'headmaster',
   ACCOUNTANT = 'accountant',
-  STAFF = 'staff',
+  STAFF = 'staff', // Temporary - will be removed after migration
 }
 
 @Entity('users')
@@ -37,7 +37,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.STAFF,
+    default: UserRole.HEADMASTER,
   })
   role: UserRole;
 

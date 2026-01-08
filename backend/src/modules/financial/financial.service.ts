@@ -68,6 +68,28 @@ export class FinancialService {
     return { message: 'Fee deleted successfully' };
   }
 
+  async getFeeStats(): Promise<{
+    totalPaid: number;
+    totalUnpaid: number;
+    totalStudentsPaid: number;
+    totalStudentsUnpaid: number;
+  }> {
+    const fees = await this.feeRepository.find();
+    
+    const paidFees = fees.filter(fee => fee.status === 'paid');
+    const unpaidFees = fees.filter(fee => fee.status !== 'paid');
+    
+    const totalPaid = paidFees.reduce((sum, fee) => sum + fee.amountPaid, 0);
+    const totalUnpaid = unpaidFees.reduce((sum, fee) => sum + (fee.amount - fee.amountPaid), 0);
+    
+    return {
+      totalPaid,
+      totalUnpaid,
+      totalStudentsPaid: paidFees.length,
+      totalStudentsUnpaid: unpaidFees.length,
+    };
+  }
+
   // EXPENSE METHODS
   async createExpense(createExpenseDto: CreateExpenseDto): Promise<ExpenseResponseDto> {
     const expense = this.expenseRepository.create(createExpenseDto);

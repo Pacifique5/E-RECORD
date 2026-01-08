@@ -1,8 +1,23 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { apiFetch } from '../../../lib/api';
 import SchoolModal from "@/components/portal/modals/school-modal";
+
+interface School {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  status: string;
+  isActive: boolean;
+  createdAt: string;
+}
 
 // Stats Card Component
 const StatsCard = ({ value, label, color }: { value: string; label: string; color: string }) => {
@@ -49,29 +64,91 @@ const RegistrationTrendChart = () => {
 // School Request Table Component
 const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
   const [showAll, setShowAll] = useState(false);
-  const schools = Array(20).fill({
-    name: 'Rwanda coding academy',
-    email: 'rca@ac.rw',
-    phone: '079888888',
-    location: 'Kigali Rwanda',
-    paymentStatus: 'Paid',
-    logo: '',
-  });
-  const visibleSchools = showAll ? schools : schools.slice(0, 5);
+  const [schools, setSchools] = useState<School[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  useEffect(() => {
+    fetchSchoolRequests();
+    // Set up auto-refresh every 30 seconds for real-time updates
+    const interval = setInterval(fetchSchoolRequests, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchSchoolRequests = async () => {
+    try {
+      const data = await apiFetch('/schools/requests');
+      setSchools(Array.isArray(data) ? data : []);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Failed to fetch school requests:', error);
+      setSchools([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAccept = async (school: School) => {
+    try {
+      await apiFetch(`/schools/${school.id}/accept`, { method: 'POST' });
+      await fetchSchoolRequests(); // Refresh the list immediately
+      onAccept(school);
+    } catch (error) {
+      console.error('Failed to accept school request:', error);
+    }
+  };
+
+  const handleReject = async (school: School) => {
+    try {
+      await apiFetch(`/schools/${school.id}/reject`, { method: 'POST' });
+      await fetchSchoolRequests(); // Refresh the list immediately
+      onReject(school);
+    } catch (error) {
+      console.error('Failed to reject school request:', error);
+    }
+  };
+
+  const filteredSchools = schools.filter(school =>
+    school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    school.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const visibleSchools = showAll ? filteredSchools : filteredSchools.slice(0, 5);
+
+  if (loading) {
+    return <div className="bg-white rounded-lg shadow-sm mt-8 p-6">Loading school requests...</div>;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm mt-8 p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold">Schools Request ({schools.length})</h2>
-        <button onClick={() => setShowAll(v => !v)} className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">
-          {showAll ? 'Show less' : 'Load more'}
-        </button>
+        <div className="flex space-x-2">
+          <button 
+            onClick={fetchSchoolRequests}
+            className="bg-gray-500 text-white px-4 py-2 rounded font-medium shadow hover:bg-gray-600 transition-colors"
+            disabled={loading}
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button onClick={() => setShowAll(v => !v)} className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">
+            {showAll ? 'Show less' : 'Load more'}
+          </button>
+        </div>
       </div>
+      {lastUpdated && (
+        <div className="mb-4 text-sm text-gray-500">
+          Last updated: {lastUpdated.toLocaleTimeString()}
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <div className="relative">
           <input
             type="text"
             placeholder="Search School"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
           />
           <svg
@@ -90,7 +167,10 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
           </svg>
         </div>
         <select className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent font-inter text-gray-700">
-          <option value="">Select an option</option>
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
         </select>
       </div>
       <div className="overflow-x-auto">
@@ -105,21 +185,29 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
             </tr>
           </thead>
           <tbody>
-            {visibleSchools.map((school, index) => (
-              <tr key={index} className="border-b">
-                <td className="py-4 px-4">{school.name}</td>
-                <td className="py-4 px-4">{school.email}</td>
-                <td className="py-4 px-4">{school.phone}</td>
-                <td className="py-4 px-4">{school.location}</td>
-                <td className="py-4 px-4">
-                  <div className="flex space-x-2">
-                    <button className="px-4 py-1 bg-[#1A75FF] text-white rounded hover:bg-blue-600" onClick={() => onViewRequest(school)}>View</button>
-                    <button className="px-4 py-1 bg-[#00BA34] text-white rounded hover:bg-green-600" onClick={() => onAccept(school)}>Accept</button>
-                    <button className="px-4 py-1 bg-[#F04438] text-white rounded hover:bg-red-600" onClick={() => onReject(school)}>Reject</button>
-                  </div>
+            {visibleSchools.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  {schools.length === 0 ? 'No school requests found' : 'No schools match your search'}
                 </td>
               </tr>
-            ))}
+            ) : (
+              visibleSchools.map((school) => (
+                <tr key={school.id} className="border-b">
+                  <td className="py-4 px-4">{school.name}</td>
+                  <td className="py-4 px-4">{school.email}</td>
+                  <td className="py-4 px-4">{school.phoneNumber || 'N/A'}</td>
+                  <td className="py-4 px-4">{`${school.city || ''} ${school.country || ''}`.trim() || school.address}</td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-2">
+                      <button className="px-4 py-1 bg-[#1A75FF] text-white rounded hover:bg-blue-600" onClick={() => onViewRequest(school)}>View</button>
+                      <button className="px-4 py-1 bg-[#00BA34] text-white rounded hover:bg-green-600" onClick={() => handleAccept(school)}>Accept</button>
+                      <button className="px-4 py-1 bg-[#F04438] text-white rounded hover:bg-red-600" onClick={() => handleReject(school)}>Reject</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -294,6 +382,35 @@ export default function SchoolsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'request' | 'info'>("request");
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
+  const [stats, setStats] = useState({
+    totalSchools: 0,
+    activeSchools: 0,
+    pendingRequests: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [allSchools, requests] = await Promise.all([
+        apiFetch('/schools'),
+        apiFetch('/schools/requests'),
+      ]);
+
+      setStats({
+        totalSchools: Array.isArray(allSchools) ? allSchools.length : 0,
+        activeSchools: Array.isArray(allSchools) ? allSchools.filter(s => s.isActive).length : 0,
+        pendingRequests: Array.isArray(requests) ? requests.length : 0,
+      });
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handlers for modal actions
   const handleViewRequest = (school: any) => {
@@ -307,24 +424,28 @@ export default function SchoolsPage() {
     setModalOpen(true);
   };
   const handleAccept = (school: any) => {
-    // TODO: Implement accept logic (API call, etc.)
+    fetchStats(); // Refresh stats immediately
     setModalOpen(false);
   };
   const handleReject = (school: any) => {
-    // TODO: Implement reject logic (API call, etc.)
+    fetchStats(); // Refresh stats immediately
     setModalOpen(false);
   };
   const handleRemove = (school: any) => {
-    // TODO: Implement remove logic (API call, etc.)
+    fetchStats(); // Refresh stats
     setModalOpen(false);
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="font-inter">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard value="100" label="Total Schools" color="text-blue-600" />
-        <StatsCard value="80" label="Active Schools" color="text-green-600" />
-        <StatsCard value="20" label="Pending Requests" color="text-orange-600" />
+        <StatsCard value={stats.totalSchools.toString()} label="Total Schools" color="text-blue-600" />
+        <StatsCard value={stats.activeSchools.toString()} label="Active Schools" color="text-green-600" />
+        <StatsCard value={stats.pendingRequests.toString()} label="Pending Requests" color="text-orange-600" />
       </div>
 
       <RegistrationTrendChart />

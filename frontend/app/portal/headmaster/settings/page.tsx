@@ -1,43 +1,68 @@
 "use client";
 
-import { useState } from "react";
-import GeneralSettings from "@/components/portal/general-settings"
-import PersonalSettings from "@/components/portal/personal-settings"
-import NotificationSettings from "@/components/portal/notification-settings"
-import DataBackup from "@/components/portal/data-backup"
+import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
+import useAuth from "@/hooks/use-auth";
+
+interface Accountant {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  createdAt: string;
+}
 
 export default function Settings() {
-  const [accountants, setAccountants] = useState([
-    { name: "Dushimire aine", email: "ainedushimire@gmail.com", createdAt: "20/10/2025" },
-  ]);
-  const [newAccountant, setNewAccountant] = useState({ name: "", email: "", createdAt: "" });
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editAccountant, setEditAccountant] = useState({ name: "", email: "", createdAt: "" });
+  const { user } = useAuth();
+  const [accountants, setAccountants] = useState<Accountant[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newAccountant, setNewAccountant] = useState({ 
+    firstName: "", 
+    lastName: "", 
+    email: "", 
+    password: "",
+    phoneNumber: ""
+  });
 
-  const handleAdd = () => {
-    if (newAccountant.name && newAccountant.email && newAccountant.createdAt) {
-      setAccountants([...accountants, newAccountant]);
-      setNewAccountant({ name: "", email: "", createdAt: "" });
+  useEffect(() => {
+    fetchAccountants();
+  }, []);
+
+  const fetchAccountants = async () => {
+    try {
+      const response = await apiFetch('/users?role=accountant');
+      setAccountants(response.users || []);
+    } catch (err) {
+      console.error('Failed to fetch accountants:', err);
     }
   };
 
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-    setEditAccountant(accountants[index]);
-  };
-
-  const handleSaveEdit = () => {
-    if (editingIndex !== null) {
-      const updated = [...accountants];
-      updated[editingIndex] = editAccountant;
-      setAccountants(updated);
-      setEditingIndex(null);
-      setEditAccountant({ name: "", email: "", createdAt: "" });
+  const handleAddAccountant = async () => {
+    if (!newAccountant.firstName || !newAccountant.lastName || !newAccountant.email || !newAccountant.password) {
+      setError('Please fill in all required fields');
+      return;
     }
-  };
 
-  const handleDelete = (index: number) => {
-    setAccountants(accountants.filter((_, i) => i !== index));
+    setLoading(true);
+    setError(null);
+
+    try {
+      await apiFetch('/auth/add-accountant', {
+        method: 'POST',
+        body: JSON.stringify(newAccountant),
+      });
+
+      setNewAccountant({ firstName: "", lastName: "", email: "", password: "", phoneNumber: "" });
+      setShowAddForm(false);
+      fetchAccountants(); // Refresh the list
+    } catch (err: any) {
+      const msg = err?.body?.message || err?.message || 'Failed to add accountant';
+      setError(Array.isArray(msg) ? msg.join(', ') : String(msg));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -104,15 +129,98 @@ export default function Settings() {
         </section>
         <section className="mb-14">
           <h3 className="text-2xl font-semibold mb-8 text-blue-700">Accountant Management</h3>
+          
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              {error}
+            </div>
+          )}
+
           <div className="flex justify-end mb-4">
             <button
               className="bg-blue-600 text-white px-5 py-2 rounded-lg text-base font-medium shadow hover:bg-blue-700 transition"
-              onClick={handleAdd}
+              onClick={() => setShowAddForm(!showAddForm)}
               type="button"
             >
-              Add an accountant
+              {showAddForm ? 'Cancel' : 'Add an accountant'}
             </button>
           </div>
+
+          {showAddForm && (
+            <div className="mb-6 p-6 bg-gray-50 rounded-lg border">
+              <h4 className="text-lg font-semibold mb-4 text-gray-800">Add New Accountant</h4>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                  <input
+                    type="text"
+                    value={newAccountant.firstName}
+                    onChange={(e) => setNewAccountant({ ...newAccountant, firstName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                    placeholder="Enter first name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    value={newAccountant.lastName}
+                    onChange={(e) => setNewAccountant({ ...newAccountant, lastName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                    placeholder="Enter last name"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={newAccountant.email}
+                    onChange={(e) => setNewAccountant({ ...newAccountant, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                    placeholder="Enter email address"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number (optional)</label>
+                  <input
+                    type="tel"
+                    value={newAccountant.phoneNumber}
+                    onChange={(e) => setNewAccountant({ ...newAccountant, phoneNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={newAccountant.password}
+                  onChange={(e) => setNewAccountant({ ...newAccountant, password: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                  placeholder="Enter password (min. 6 characters)"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={handleAddAccountant}
+                  disabled={loading}
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
+                  type="button"
+                >
+                  {loading ? 'Adding...' : 'Add Accountant'}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="overflow-x-auto mb-4 rounded-lg shadow">
             <table className="min-w-full bg-white border border-gray-200 rounded-lg">
               <thead className="bg-gray-50">
@@ -120,53 +228,34 @@ export default function Settings() {
                   <th className="px-6 py-3 text-left text-base font-semibold text-gray-700">Name</th>
                   <th className="px-6 py-3 text-left text-base font-semibold text-gray-700">Email</th>
                   <th className="px-6 py-3 text-left text-base font-semibold text-gray-700">Created at</th>
-                  <th className="px-6 py-3 text-left text-base font-semibold text-gray-700">Action</th>
+                  <th className="px-6 py-3 text-left text-base font-semibold text-gray-700">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {accountants.map((acc, idx) => (
-                  <tr key={idx} className="border-b hover:bg-blue-50/30">
-                    {editingIndex === idx ? (
-                      <>
-                        <td className="px-6 py-3 text-base text-gray-800">
-                          <input type="text" value={editAccountant.name} onChange={e => setEditAccountant({ ...editAccountant, name: e.target.value })} className="px-2 py-1 border rounded" />
-                        </td>
-                        <td className="px-6 py-3 text-base text-gray-800">
-                          <input type="text" value={editAccountant.email} onChange={e => setEditAccountant({ ...editAccountant, email: e.target.value })} className="px-2 py-1 border rounded" />
-                        </td>
-                        <td className="px-6 py-3 text-base text-gray-800">
-                          <input type="text" value={editAccountant.createdAt} onChange={e => setEditAccountant({ ...editAccountant, createdAt: e.target.value })} className="px-2 py-1 border rounded" />
-                        </td>
-                        <td className="px-6 py-3 text-base">
-                          <button className="bg-green-600 text-white px-4 py-1 rounded mr-2" onClick={handleSaveEdit} type="button">Save</button>
-                          <button className="bg-gray-400 text-white px-4 py-1 rounded" onClick={() => setEditingIndex(null)} type="button">Cancel</button>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="px-6 py-3 text-base text-gray-800">{acc.name}</td>
-                        <td className="px-6 py-3 text-base text-gray-800">{acc.email}</td>
-                        <td className="px-6 py-3 text-base text-gray-800">{acc.createdAt}</td>
-                        <td className="px-6 py-3 text-base">
-                          <button className="bg-blue-600 text-white px-4 py-1 rounded mr-2 hover:bg-blue-700 transition" onClick={() => handleEdit(idx)} type="button">Edit</button>
-                          <button className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition" onClick={() => handleDelete(idx)} type="button">Delete</button>
-                        </td>
-                      </>
-                    )}
+                {accountants.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                      No accountants added yet. Click "Add an accountant" to get started.
+                    </td>
                   </tr>
-                ))}
-                <tr>
-                  <td className="px-6 py-3 text-base">
-                    <input type="text" value={newAccountant.name} onChange={e => setNewAccountant({ ...newAccountant, name: e.target.value })} className="px-2 py-1 border rounded" placeholder="Name" />
-                  </td>
-                  <td className="px-6 py-3 text-base">
-                    <input type="text" value={newAccountant.email} onChange={e => setNewAccountant({ ...newAccountant, email: e.target.value })} className="px-2 py-1 border rounded" placeholder="Email" />
-                  </td>
-                  <td className="px-6 py-3 text-base">
-                    <input type="text" value={newAccountant.createdAt} onChange={e => setNewAccountant({ ...newAccountant, createdAt: e.target.value })} className="px-2 py-1 border rounded" placeholder="Created at" />
-                  </td>
-                  <td></td>
-                </tr>
+                ) : (
+                  accountants.map((acc) => (
+                    <tr key={acc.id} className="border-b hover:bg-blue-50/30">
+                      <td className="px-6 py-3 text-base text-gray-800">
+                        {acc.firstName} {acc.lastName}
+                      </td>
+                      <td className="px-6 py-3 text-base text-gray-800">{acc.email}</td>
+                      <td className="px-6 py-3 text-base text-gray-800">
+                        {new Date(acc.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-3 text-base">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Active
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

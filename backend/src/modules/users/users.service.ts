@@ -31,11 +31,38 @@ export class UsersService {
     return this.toResponseDto(user);
   }
 
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.find({
-      relations: ['school'],
-    });
-    return users.map((user) => this.toResponseDto(user));
+  async findAll(
+    role?: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    users: UserResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.school', 'school');
+
+    if (role) {
+      queryBuilder.where('user.role = :role', { role });
+    }
+
+    const total = await queryBuilder.getCount();
+    const users = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    return {
+      users: users.map((user) => this.toResponseDto(user)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findById(id: string): Promise<UserResponseDto> {

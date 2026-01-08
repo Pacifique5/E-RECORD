@@ -47,6 +47,9 @@ export class School {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: 'pending' })
+  status: string; // 'pending', 'approved', 'rejected'
+
   @OneToMany(() => User, (user) => user.school)
   users: User[];
 
