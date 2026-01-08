@@ -133,11 +133,6 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
           <div className="flex items-center justify-between h-16 px-8">
             <h1 className="text-2xl font-semibold text-gray-900">
               Welcome to our platform {user?.firstName || 'User'}
-              {user?.school && (
-                <div className="text-sm font-normal text-gray-600 mt-1">
-                  {user.school.name} - {user.school.code}
-                </div>
-              )}
             </h1>
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">

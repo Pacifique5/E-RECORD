@@ -3,7 +3,7 @@ import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../../entities/user.entity';
+import { User, UserRole } from '../../entities/user.entity';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard)
@@ -25,25 +25,25 @@ export class DashboardController {
   @Get('stats')
   async getDashboardStats(@Req() req: { user: { userId: string; role: string } }) {
     // Admin gets all data, others get school-specific data
-    const schoolId = req.user.role === 'admin' ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getDashboardStats(schoolId);
   }
 
   @Get('financial-summary')
   async getFinancialSummary(@Req() req: { user: { userId: string; role: string } }) {
-    const schoolId = req.user.role === 'admin' ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getFinancialSummary(schoolId);
   }
 
   @Get('charts/income-expenses')
   async getIncomeExpensesData(@Req() req: { user: { userId: string; role: string } }) {
-    const schoolId = req.user.role === 'admin' ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getIncomeExpensesData(schoolId);
   }
 
   @Get('charts/payroll-trend')
   async getPayrollTrendData(@Req() req: { user: { userId: string; role: string } }) {
-    const schoolId = req.user.role === 'admin' ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getPayrollTrendData(schoolId);
   }
 }

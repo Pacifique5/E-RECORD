@@ -34,7 +34,7 @@ export default function LoginPage() {
           router.push('/registration/confirmation');
         } else if (authUser.school.status === 'approved') {
           // School approved - require code verification before dashboard access
-          router.push('/registration/verify');
+          router.push('/registration/login-verify');
         } else if (authUser.school.status === 'rejected') {
           // School rejected - show rejection message and allow re-application
           setError('Your school registration was rejected. Please contact support or submit a new application.');

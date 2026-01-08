@@ -6,13 +6,10 @@ import BudgetOverview from "@/components/portal/budget-overview"
 import MoneyUsage from "@/components/portal/money-usage"
 import StaffPayrollTable from "@/components/portal/staff-payroll-table"
 import FeesManagementTable from "@/components/portal/fees-management-table"
-import SchoolInfoCard from "@/components/portal/school-info-card"
 
 export default function AccountantDashboard() {
   return (
     <div className="p-10 max-w-7xl mx-auto">
-      <SchoolInfoCard />
-
       <DashboardStats />
 
       <div className="mt-10">
