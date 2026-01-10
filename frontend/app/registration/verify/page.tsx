@@ -15,7 +15,12 @@ export default function VerifyPage() {
   const handleInputChange = (index: number, value: string) => {
     if (value.length <= 1) {
       const newCode = [...code];
-      newCode[index] = value.toUpperCase();
+      // Convert common mistakes: O -> 0, I -> 1, l -> 1
+      let cleanValue = value.toUpperCase();
+      if (index >= 3) { // Only for the numeric part (positions 3-6)
+        cleanValue = cleanValue.replace(/O/g, '0').replace(/[Il]/g, '1');
+      }
+      newCode[index] = cleanValue;
       setCode(newCode);
 
       // Auto-focus next input
@@ -42,6 +47,13 @@ export default function VerifyPage() {
       return;
     }
 
+    // Validate format: should start with SCH followed by 4 digits
+    const codePattern = /^SCH\d{4}$/;
+    if (!codePattern.test(schoolCode)) {
+      setError('Invalid code format. School codes should be in format SCH0001 (SCH followed by 4 digits, not letters)');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -65,7 +77,7 @@ export default function VerifyPage() {
     } catch (err: any) {
       console.error('Verification error:', err); // Debug log
       if (err.status === 404) {
-        setError(`School code "${schoolCode}" not found. Please check your code or wait for admin approval.`);
+        setError(`School code "${schoolCode}" not found. Please check your code carefully - make sure you're using zeros (0) not letter O's, and that your school has been approved by an admin.`);
       } else {
         setError(`Failed to verify school code. Error: ${err.message || 'Unknown error'}`);
       }
@@ -115,7 +127,7 @@ export default function VerifyPage() {
               ))}
             </div>
             <p className="mt-2 text-sm text-gray-500 text-center">
-              Enter the 7-character code exactly as shown in the admin dashboard (e.g., SCH0001)
+              Enter the 7-character code exactly as shown (e.g., SCH0001 - that's SCH followed by four zeros and a number)
             </p>
           </div>
 
@@ -151,6 +163,12 @@ export default function VerifyPage() {
             <li>• Use this page to verify your approval status</li>
             <li>• Login with your credentials to access portal</li>
           </ul>
+          <div className="mt-3 p-2 bg-yellow-100 rounded border-l-4 border-yellow-500">
+            <p className="text-sm text-yellow-800">
+              <strong>Important:</strong> School codes use zeros (0), not letter O's. 
+              Example: SCH<span className="font-mono bg-white px-1 rounded">0001</span> not SCH<span className="font-mono bg-white px-1 rounded line-through">OOO1</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
