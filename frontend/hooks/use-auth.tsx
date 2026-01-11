@@ -13,6 +13,7 @@ type AuthUser = {
     name: string;
     code: string;
     status: string;
+    logo?: string;
   } | null;
 };
 

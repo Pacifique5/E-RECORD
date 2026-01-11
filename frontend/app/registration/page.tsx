@@ -26,9 +26,23 @@ export default function RegisterPage() {
   const [schoolCountry, setSchoolCountry] = useState('');
   const [schoolPhone, setSchoolPhone] = useState('');
   const [schoolEmail, setSchoolEmail] = useState('');
+  const [schoolLogo, setSchoolLogo] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSchoolLogo(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLogoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,18 +75,23 @@ export default function RegisterPage() {
       const authUser = await login(email, password);
       
       // Step 3: Register school with headmaster ID
+      const formData = new FormData();
+      formData.append('name', schoolName);
+      formData.append('address', schoolAddress);
+      formData.append('city', schoolCity);
+      formData.append('state', schoolState);
+      formData.append('country', schoolCountry);
+      formData.append('phoneNumber', schoolPhone);
+      formData.append('email', schoolEmail);
+      formData.append('headmasterId', authUser.id);
+      
+      if (schoolLogo) {
+        formData.append('logo', schoolLogo);
+      }
+
       await apiFetch('/schools', {
         method: 'POST',
-        body: JSON.stringify({
-          name: schoolName,
-          address: schoolAddress,
-          city: schoolCity,
-          state: schoolState,
-          country: schoolCountry,
-          phoneNumber: schoolPhone,
-          email: schoolEmail,
-          headmasterId: authUser.id,
-        }),
+        body: formData,
       });
 
       // Redirect to confirmation page
@@ -214,6 +233,32 @@ export default function RegisterPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="schoolLogo" className="block text-sm font-medium text-gray-700 mb-1">
+                  School Logo <span className="text-gray-400">(optional)</span>
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    id="schoolLogo"
+                    name="schoolLogo"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {logoPreview && (
+                    <div className="flex-shrink-0">
+                      <img
+                        src={logoPreview}
+                        alt="Logo preview"
+                        className="w-16 h-16 object-cover rounded-lg border border-gray-300"
+                      />
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Upload your school logo (PNG, JPG, or GIF)</p>
               </div>
 
               <div className="md:col-span-2">

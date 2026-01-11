@@ -220,6 +220,7 @@ export class SchoolsService {
       country: school.country,
       phoneNumber: school.phoneNumber,
       email: school.email,
+      logo: school.logo,
       isActive: school.isActive,
       status: school.status,
       createdAt: school.createdAt,

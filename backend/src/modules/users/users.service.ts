@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../../entities/user.entity';
+import { School } from '../../entities/school.entity';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../../common/dto';
 
 @Injectable()
@@ -10,9 +11,11 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(School)
+    private schoolRepository: Repository<School>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async create(createUserDto: CreateUserDto, creatorUserId?: string): Promise<UserResponseDto> {
     const { email, password, firstName, lastName, phoneNumber, role } =
       createUserDto;
 
@@ -27,6 +30,18 @@ export class UsersService {
       role,
     });
 
+    // If creating an accountant and creator is provided, associate with creator's school
+    if (role === 'accountant' && creatorUserId) {
+      const creator = await this.userRepository.findOne({
+        where: { id: creatorUserId },
+        relations: ['school'],
+      });
+      
+      if (creator && creator.school) {
+        user.school = creator.school;
+      }
+    }
+
     await this.userRepository.save(user);
     return this.toResponseDto(user);
   }
@@ -35,6 +50,7 @@ export class UsersService {
     role?: string,
     page: number = 1,
     limit: number = 10,
+    currentUserId?: string,
   ): Promise<{
     users: UserResponseDto[];
     total: number;
@@ -48,6 +64,20 @@ export class UsersService {
 
     if (role) {
       queryBuilder.where('user.role = :role', { role });
+    }
+
+    // If requesting accountants and currentUserId is provided, filter by same school
+    if (role === 'accountant' && currentUserId) {
+      const currentUser = await this.userRepository.findOne({
+        where: { id: currentUserId },
+        relations: ['school'],
+      });
+      
+      if (currentUser && currentUser.school) {
+        queryBuilder.andWhere('user.school.id = :schoolId', { 
+          schoolId: currentUser.school.id 
+        });
+      }
     }
 
     const total = await queryBuilder.getCount();
@@ -127,6 +157,7 @@ export class UsersService {
         name: user.school.name,
         code: user.school.code,
         status: user.school.status,
+        logo: user.school.logo,
       } : null,
     };
   }

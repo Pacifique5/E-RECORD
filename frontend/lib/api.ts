@@ -13,9 +13,13 @@ async function parseResponse(res: Response) {
 
 export async function apiFetch(path: string, options: ApiOptions = {}) {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
   };
+
+  // Only set Content-Type for non-FormData requests
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');

@@ -8,7 +8,12 @@ import {
   Delete,
   UseGuards,
   ValidationPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { SchoolsService } from './schools.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateSchoolDto, UpdateSchoolDto, SchoolResponseDto } from '../../common/dto';
@@ -19,9 +24,33 @@ export class SchoolsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('logo', {
+    storage: diskStorage({
+      destination: './uploads/logos',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `logo-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed!'), false);
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+  }))
   async create(
-    @Body(ValidationPipe) createSchoolDto: CreateSchoolDto,
+    @Body() createSchoolData: any,
+    @UploadedFile() logoFile?: Express.Multer.File,
   ): Promise<SchoolResponseDto> {
+    const createSchoolDto: CreateSchoolDto = {
+      ...createSchoolData,
+      logo: logoFile ? `/uploads/logos/${logoFile.filename}` : undefined,
+    };
     return this.schoolsService.create(createSchoolDto);
   }
 

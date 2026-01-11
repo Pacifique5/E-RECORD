@@ -30,9 +30,15 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">School Logo</label>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <div className="w-8 h-8 bg-blue-500 rounded"></div>
-              </div>
+              <img
+                src={user?.school?.logo ? `http://localhost:3001${user.school.logo}` : '/placeholder-logo.png'}
+                alt={`${user?.school?.name || 'School'} logo`}
+                className="w-16 h-16 object-cover rounded-lg border border-gray-300"
+                onError={(e) => {
+                  // Fallback to a default image if the logo fails to load
+                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzM3NzNmZiIvPgo8cGF0aCBkPSJNMjAgMjBoMjR2MjRIMjBWMjB6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K';
+                }}
+              />
             </div>
           </div>
 

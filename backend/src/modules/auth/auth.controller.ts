@@ -21,12 +21,12 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post('add-accountant')
+  @Post('verify-school-code')
   @UseGuards(JwtAuthGuard)
-  async addAccountant(
+  async verifySchoolCode(
     @Request() req,
-    @Body(ValidationPipe) addAccountantDto: AddAccountantDto,
-  ): Promise<AuthResponseDto> {
-    return this.authService.addAccountant(req.user.sub, addAccountantDto);
+    @Body() body: { code: string },
+  ): Promise<{ valid: boolean; message?: string }> {
+    return this.authService.verifySchoolCode(req.user.sub, body.code);
   }
 }

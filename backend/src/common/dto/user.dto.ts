@@ -59,5 +59,6 @@ export class UserResponseDto {
     name: string;
     code: string;
     status: string;
+    logo?: string;
   } | null;
 }

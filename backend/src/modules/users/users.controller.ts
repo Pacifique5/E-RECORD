@@ -9,6 +9,7 @@ import {
   UseGuards,
   ValidationPipe,
   Query,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -22,8 +23,9 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async create(
     @Body(ValidationPipe) createUserDto: CreateUserDto,
+    @Req() req: { user: { userId: string } },
   ): Promise<UserResponseDto> {
-    return this.usersService.create(createUserDto);
+    return this.usersService.create(createUserDto, req.user.userId);
   }
 
   @Get()
@@ -32,6 +34,7 @@ export class UsersController {
     @Query('role') role?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Req() req?: { user: { userId: string } },
   ): Promise<{
     users: UserResponseDto[];
     total: number;
@@ -41,7 +44,7 @@ export class UsersController {
   }> {
     const pageNum = parseInt(page || '1') || 1;
     const limitNum = parseInt(limit || '10') || 10;
-    return this.usersService.findAll(role, pageNum, limitNum);
+    return this.usersService.findAll(role, pageNum, limitNum, req?.user?.userId);
   }
 
   @Get(':id')

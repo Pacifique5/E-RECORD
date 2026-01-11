@@ -90,6 +90,7 @@ export class AuthService {
         name: user.school.name,
         code: user.school.code,
         status: user.school.status,
+        logo: user.school.logo,
       } : null,
     };
   }
@@ -98,57 +99,31 @@ export class AuthService {
     return this.userRepository.findOne({ where: { id: userId } });
   }
 
-  async addAccountant(
-    headmasterId: string,
-    accountantData: { email: string; firstName: string; lastName: string; phoneNumber?: string; password: string }
-  ): Promise<AuthResponseDto> {
-    // Verify the requester is a headmaster
-    const headmaster = await this.userRepository.findOne({ 
-      where: { id: headmasterId },
-      relations: ['school']
-    });
-    
-    if (!headmaster || headmaster.role !== UserRole.HEADMASTER) {
-      throw new UnauthorizedException('Only headmasters can add accountants');
-    }
-
-    // Verify the headmaster's school is approved
-    if (!headmaster.school || headmaster.school.status !== 'approved') {
-      throw new UnauthorizedException('School must be approved before adding accountants');
-    }
-
-    const existingUser = await this.userRepository.findOne({ where: { email: accountantData.email } });
-    if (existingUser) {
-      throw new UnauthorizedException('Email already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(accountantData.password, 10);
-
-    const accountant = this.userRepository.create({
-      email: accountantData.email,
-      password: hashedPassword,
-      firstName: accountantData.firstName,
-      lastName: accountantData.lastName,
-      phoneNumber: accountantData.phoneNumber,
-      role: UserRole.ACCOUNTANT,
-      school: headmaster.school,
+  async verifySchoolCode(userId: string, enteredCode: string): Promise<{ valid: boolean; message?: string }> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['school'],
     });
 
-    await this.userRepository.save(accountant);
+    if (!user) {
+      return { valid: false, message: 'User not found' };
+    }
 
-    const accessToken = this.jwtService.sign({
-      sub: accountant.id,
-      email: accountant.email,
-      role: accountant.role,
-    });
+    if (!user.school) {
+      return { valid: false, message: 'No school associated with your account' };
+    }
 
-    return {
-      id: accountant.id,
-      email: accountant.email,
-      firstName: accountant.firstName,
-      lastName: accountant.lastName,
-      role: accountant.role,
-      accessToken,
-    };
+    if (user.school.status !== 'approved') {
+      return { valid: false, message: 'Your school is not approved yet' };
+    }
+
+    if (user.school.code !== enteredCode) {
+      return { 
+        valid: false, 
+        message: `Access denied! You entered "${enteredCode}" but you are associated with ${user.school.name} (code: ${user.school.code}). Please use your own school's code.`
+      };
+    }
+
+    return { valid: true };
   }
 }

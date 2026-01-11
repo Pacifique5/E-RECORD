@@ -78,6 +78,7 @@ export class SchoolResponseDto {
   country?: string;
   phoneNumber?: string;
   email?: string;
+  logo?: string;
   isActive: boolean;
   status: string;
   createdAt: Date;

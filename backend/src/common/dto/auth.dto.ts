@@ -50,6 +50,7 @@ export class AuthResponseDto {
     name: string;
     code: string;
     status: string;
+    logo?: string;
   } | null;
 }
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/use-auth';
+import { apiFetch } from '@/lib/api';
 
 export default function LoginVerifyPage() {
   const router = useRouter();
@@ -13,6 +14,11 @@ export default function LoginVerifyPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Don't redirect immediately if user is still loading
+    if (user === null) {
+      return; // Wait for user to load
+    }
+
     // Redirect if user is not logged in or doesn't have a school
     if (!user || !user.school) {
       router.push('/registration/login');
@@ -56,28 +62,28 @@ export default function LoginVerifyPage() {
       return;
     }
 
-    if (!user?.school) {
-      setError('No school associated with your account');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      // Check if the entered code matches the user's school code
-      if (enteredCode === user.school.code) {
-        // Code matches - redirect directly to dashboard based on role
-        if (user.role === 'headmaster') {
+      // Verify the school code with the backend
+      const response = await apiFetch('/auth/verify-school-code', {
+        method: 'POST',
+        body: JSON.stringify({ code: enteredCode })
+      });
+
+      if (response.valid) {
+        // Code is valid - redirect to dashboard based on role
+        if (user?.role === 'headmaster') {
           router.push('/portal/headmaster');
-        } else if (user.role === 'accountant') {
+        } else if (user?.role === 'accountant') {
           router.push('/portal/accountant');
         } else {
           router.push('/portal');
         }
       } else {
-        // Code doesn't match
-        setError(`Invalid school code. Please enter the code for ${user.school.name} (${user.school.code})`);
+        // Code is invalid - show error message from backend
+        setError(response.message || 'Invalid school code');
       }
     } catch (err: any) {
       setError('Verification failed. Please try again.');

@@ -8,6 +8,7 @@ import SchoolModal from "@/components/portal/modals/school-modal";
 interface School {
   id: string;
   name: string;
+  code: string;
   email: string;
   phoneNumber: string;
   address: string;
@@ -332,6 +333,8 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
     }
 
     try {
+      // For deactivation, we could use a different endpoint or flag
+      // For now, we'll use the same delete endpoint which removes the school
       await apiFetch(`/schools/${school.id}`, { method: 'DELETE' });
       await fetchActiveSchools(); // Refresh the list
       alert(`School "${school.name}" has been deactivated successfully.`);
@@ -354,11 +357,10 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
     }
 
     try {
-      // For now, we'll use the same deactivate endpoint
-      // In a real system, you'd have a separate permanent delete endpoint
       await apiFetch(`/schools/${school.id}`, { method: 'DELETE' });
       await fetchActiveSchools(); // Refresh the list
-      alert(`School "${school.name}" has been removed from the system.`);
+      onRemove(school); // Notify parent component
+      alert(`School "${school.name}" has been permanently removed from the system.`);
     } catch (error: any) {
       console.error('Failed to remove school:', error);
       alert('Failed to remove school: ' + (error.message || 'Unknown error'));
@@ -424,6 +426,8 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
           <input
             type="text"
             placeholder="Search School"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
           />
           <svg
