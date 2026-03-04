@@ -125,7 +125,7 @@ Permissions: Full system access, approve/reject schools
 
 #### Headmaster 1
 ```
-Email: pacifiquem58@gmail.com
+Email:  
 Password: password123
 School: Rwanda Coding Academy
 School Code: SCH0001
