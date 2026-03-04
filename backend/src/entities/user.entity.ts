@@ -44,6 +44,9 @@ export class User {
   @Column({ nullable: true })
   phoneNumber: string;
 
+  @Column({ type: 'varchar', nullable: true, default: null })
+  profilePicture: string | null;
+
   @Column({ default: true })
   isActive: boolean;
 

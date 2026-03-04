@@ -56,6 +56,7 @@ export class UserResponseDto {
   lastName: string;
   role: UserRole;
   phoneNumber?: string;
+  profilePicture?: string;
   isActive: boolean;
   createdAt: Date;
   school?: {

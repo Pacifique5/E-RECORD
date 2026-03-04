@@ -10,7 +10,12 @@ import {
   ValidationPipe,
   Query,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../../common/dto';
@@ -72,5 +77,37 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string): Promise<{ message: string }> {
     return this.usersService.delete(id);
+  }
+
+  @Post(':id/profile-picture')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('profileImage', {
+    storage: diskStorage({
+      destination: './uploads/profiles',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `profile-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed!'), false);
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+  }))
+  async uploadProfilePicture(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UserResponseDto> {
+    if (!file) {
+      throw new Error('No file uploaded');
+    }
+    const profilePicture = `/uploads/profiles/${file.filename}`;
+    return this.usersService.updateProfilePicture(id, profilePicture);
   }
 }

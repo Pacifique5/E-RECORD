@@ -150,6 +150,20 @@ export class UsersService {
     return { message: 'User deleted successfully' };
   }
 
+  async updateProfilePicture(id: string, profilePicture: string | null): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({ 
+      where: { id },
+      relations: ['school']
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    user.profilePicture = profilePicture;
+    await this.userRepository.save(user);
+    return this.toResponseDto(user);
+  }
+
   private toResponseDto(user: User): UserResponseDto {
     return {
       id: user.id,
@@ -158,6 +172,7 @@ export class UsersService {
       lastName: user.lastName,
       role: user.role,
       phoneNumber: user.phoneNumber,
+      profilePicture: user.profilePicture || undefined,
       isActive: user.isActive,
       createdAt: user.createdAt,
       school: user.school ? {

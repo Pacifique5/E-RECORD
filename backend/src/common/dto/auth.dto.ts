@@ -45,6 +45,7 @@ export class AuthResponseDto {
   lastName: string;
   role: string;
   accessToken: string;
+  profilePicture?: string;
   school?: {
     id: string;
     name: string;

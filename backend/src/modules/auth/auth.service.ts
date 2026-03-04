@@ -85,6 +85,7 @@ export class AuthService {
       lastName: user.lastName,
       role: user.role,
       accessToken,
+      profilePicture: user.profilePicture || undefined,
       school: user.school ? {
         id: user.school.id,
         name: user.school.name,

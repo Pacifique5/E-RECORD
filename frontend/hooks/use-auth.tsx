@@ -8,6 +8,7 @@ type AuthUser = {
   lastName?: string;
   role?: string;
   accessToken?: string;
+  profilePicture?: string;
   school?: {
     id: string;
     name: string;
@@ -25,6 +26,17 @@ export default function useAuth() {
     if (!token) return;
     const stored = localStorage.getItem('auth_user');
     if (stored) setUser(JSON.parse(stored));
+
+    // Listen for profile picture updates
+    const handleStorageChange = () => {
+      const updatedUser = localStorage.getItem('auth_user');
+      if (updatedUser) {
+        setUser(JSON.parse(updatedUser));
+      }
+    };
+
+    window.addEventListener('auth-user-updated', handleStorageChange);
+    return () => window.removeEventListener('auth-user-updated', handleStorageChange);
   }, []);
 
   async function login(email: string, password: string) {
@@ -64,5 +76,18 @@ export default function useAuth() {
     return typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   }
 
-  return { user, login, logout, getToken };
+  function updateUser(updatedUser: Partial<AuthUser>) {
+    if (typeof window !== 'undefined') {
+      const currentUser = localStorage.getItem('auth_user');
+      if (currentUser) {
+        const userData = { ...JSON.parse(currentUser), ...updatedUser };
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        setUser(userData);
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('auth-user-updated'));
+      }
+    }
+  }
+
+  return { user, login, logout, getToken, updateUser };
 }
