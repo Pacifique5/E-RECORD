@@ -16,8 +16,10 @@ export default function ProfilePage() {
       {/* User Profile Section */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-            <User className="h-8 w-8 text-blue-600" />
+          <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+            <span className="text-2xl font-bold text-gray-600">
+              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+            </span>
           </div>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">

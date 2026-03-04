@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { User, Plus, Edit, Trash2 } from "lucide-react"
 import useAuth from '@/hooks/use-auth'
 import AddAccountantModal from '@/components/portal/modals/add-accountant-modal'
+import EditAccountantModal from '@/components/portal/modals/edit-accountant-modal'
 import { apiFetch } from '@/lib/api'
 
 interface AccountantUser {
@@ -11,12 +12,15 @@ interface AccountantUser {
   firstName: string
   lastName: string
   email: string
+  phoneNumber?: string
   createdAt: string
 }
 
 export default function SettingsPage() {
   const { user } = useAuth()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedAccountant, setSelectedAccountant] = useState<AccountantUser | null>(null)
   const [accountants, setAccountants] = useState<AccountantUser[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -40,6 +44,16 @@ export default function SettingsPage() {
 
   const handleAddSuccess = () => {
     fetchAccountants() // Refresh the list
+  }
+
+  const handleEditClick = (accountant: AccountantUser) => {
+    setSelectedAccountant(accountant)
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSuccess = () => {
+    fetchAccountants() // Refresh the list
+    setSelectedAccountant(null)
   }
 
   const handleDeleteAccountant = async (accountantId: string) => {
@@ -223,7 +237,10 @@ export default function SettingsPage() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex space-x-2">
-                            <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
+                            <button 
+                              onClick={() => handleEditClick(accountant)}
+                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+                            >
                               Edit
                             </button>
                             <button 
@@ -298,6 +315,17 @@ export default function SettingsPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleAddSuccess}
+      />
+
+      {/* Edit Accountant Modal */}
+      <EditAccountantModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setSelectedAccountant(null)
+        }}
+        onSuccess={handleEditSuccess}
+        accountant={selectedAccountant}
       />
     </div>
   )

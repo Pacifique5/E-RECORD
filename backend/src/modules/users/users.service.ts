@@ -121,9 +121,17 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ 
+      where: { id },
+      relations: ['school']
+    });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // If password is being updated, hash it
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
     Object.assign(user, updateUserDto);
@@ -137,9 +145,9 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    user.isActive = false;
-    await this.userRepository.save(user);
-    return { message: 'User deactivated successfully' };
+    // Actually remove the user from database
+    await this.userRepository.remove(user);
+    return { message: 'User deleted successfully' };
   }
 
   private toResponseDto(user: User): UserResponseDto {
