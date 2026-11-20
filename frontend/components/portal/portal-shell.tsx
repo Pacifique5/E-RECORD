@@ -154,16 +154,14 @@ function PortalFrame({
           menuOpen ? "translate-x-0" : "-translate-x-full max-lg:invisible"
         )}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-6 py-6">
-          <div className="flex flex-col items-start">
-            <BrandLogo href={`/portal/${role}`} className="h-9 w-auto" />
-            <span className="mt-3 rounded-full bg-blue-600 px-4 py-1 text-sm font-medium text-white">
-              {ROLE_LABEL[role]}
-            </span>
-          </div>
+        <div className="relative border-b border-gray-100 px-5 pb-5 pt-5 pr-10 lg:pr-5">
+          <BrandLogo href={`/portal/${role}`} wide className="h-auto w-full" />
+          <span className="mt-3 inline-flex rounded-full bg-blue-600 px-4 py-1 text-sm font-medium text-white">
+            {ROLE_LABEL[role]}
+          </span>
           <button
             type="button"
-            className="rounded-md p-1 text-gray-500 hover:bg-gray-100 lg:hidden"
+            className="absolute right-2 top-2 rounded-md p-1 text-gray-500 hover:bg-gray-100 lg:hidden"
             aria-label="Close menu"
             onClick={() => setMenuOpen(false)}
           >

@@ -82,16 +82,14 @@ const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
 
   return (
     <div className={`w-72 max-w-[85vw] min-h-screen bg-white border-r border-gray-200 fixed top-0 left-0 z-50 h-full overflow-y-auto transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-      <div className="px-6 py-6 border-b border-gray-100 flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-2">
-          <BrandLogo href="/admin" className="h-9 w-auto" />
-          <div className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium w-fit">
-            Admin
-          </div>
+      <div className="relative border-b border-gray-100 px-5 pb-5 pt-5 pr-10 lg:pr-5">
+        <BrandLogo href="/admin" wide className="h-auto w-full" />
+        <div className="mt-3 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium w-fit">
+          Admin
         </div>
         <button
           type="button"
-          className="lg:hidden rounded-md p-1 text-gray-500 hover:bg-gray-100"
+          className="absolute right-2 top-2 lg:hidden rounded-md p-1 text-gray-500 hover:bg-gray-100"
           aria-label="Close menu"
           onClick={onClose}
         >

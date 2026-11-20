@@ -6,9 +6,11 @@ const DARK_LOGO = "/Logo/erecord-logo-dark.svg"
 export default function BrandLogo({
   href,
   className = "h-10 w-auto",
+  wide = false,
 }: {
   href?: string
   className?: string
+  wide?: boolean
 }) {
   const mark = (
     <>
@@ -16,13 +18,14 @@ export default function BrandLogo({
       <img src={DARK_LOGO} alt="" className={`${className} hidden dark:block`} />
     </>
   )
+  const box = wide ? "block w-full" : "inline-flex items-center"
 
   if (!href) {
-    return <span className="inline-flex items-center">{mark}</span>
+    return <span className={box}>{mark}</span>
   }
 
   return (
-    <Link href={href} className="inline-flex items-center">
+    <Link href={href} className={box}>
       {mark}
     </Link>
   )
