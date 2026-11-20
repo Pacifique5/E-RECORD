@@ -26,8 +26,6 @@ import useAuth from "@/hooks/use-auth"
 import type { PortalRole } from "@/lib/portal-role"
 import { TERM_OPTIONS, termValue } from "@/lib/academic"
 import { AcademicPeriodProvider, useAcademicPeriod } from "@/components/portal/academic-period"
-import { ThemeToggle } from "@/components/portal-theme"
-
 const ROLE_LABEL: Record<PortalRole, string> = {
   headmaster: "Headmaster",
   accountant: "Accountant",
@@ -212,7 +210,6 @@ function PortalFrame({
               <FilterMenu value={year} options={YEARS} onChange={(value) => setYear(Number(value))} />
               <FilterMenu value={termLabel} options={TERMS} onChange={(value) => setTerm(termValue(String(value)))} />
             </div>
-            <ThemeToggle />
             <HeaderUserActions
               user={{
                 name: user?.firstName || "User",

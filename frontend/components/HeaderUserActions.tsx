@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/use-auth";
+import { ThemeToggle } from "@/components/portal-theme";
 
 export function HeaderUserActions({
   user,
@@ -125,6 +126,13 @@ export function HeaderUserActions({
               Account Information
             </DropdownMenuItem>
           </Link>
+
+          <DropdownMenuSeparator className="dark:border-gray-700" />
+
+          <div className="flex items-center justify-between gap-3 px-2 py-1.5">
+            <span className="text-sm text-gray-700 dark:text-gray-200">Appearance</span>
+            <ThemeToggle />
+          </div>
 
           <DropdownMenuSeparator className="dark:border-gray-700" />
 
