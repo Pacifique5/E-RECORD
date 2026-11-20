@@ -54,33 +54,33 @@ export function useColorMode() {
 
 export function ThemeToggle() {
   const { mode, setMode } = useColorMode()
+  const dark = mode === "dark"
 
   return (
-    <div
-      className="inline-flex shrink-0 rounded-lg border border-gray-200 bg-white p-0.5"
-      role="group"
-      aria-label="Color mode"
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      aria-label={dark ? "Dark mode" : "White mode"}
+      onClick={() => setMode(dark ? "light" : "dark")}
+      className="relative inline-flex h-9 w-[92px] shrink-0 items-center rounded-full p-1 transition-colors duration-200"
+      style={{ backgroundColor: dark ? "#3DDC97" : "#D1D5DB" }}
     >
-      <button
-        type="button"
-        aria-pressed={mode === "light"}
-        onClick={() => setMode("light")}
-        className={`rounded-md px-2.5 py-1 text-xs font-medium sm:px-3 sm:text-sm ${
-          mode === "light" ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
+      <span
+        className={`pointer-events-none z-10 w-full text-[11px] font-extrabold uppercase leading-none tracking-wide ${
+          dark ? "pl-1 text-left text-white" : "pr-1 text-right text-gray-600"
         }`}
       >
-        White
-      </button>
-      <button
-        type="button"
-        aria-pressed={mode === "dark"}
-        onClick={() => setMode("dark")}
-        className={`rounded-md px-2.5 py-1 text-xs font-medium sm:px-3 sm:text-sm ${
-          mode === "dark" ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
-        }`}
-      >
-        Dark
-      </button>
-    </div>
+        {dark ? "Dark" : "White"}
+      </span>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-1 top-1 h-7 w-7 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-transform duration-200"
+        style={{
+          backgroundColor: "#ffffff",
+          transform: dark ? "translateX(56px)" : "translateX(0)",
+        }}
+      />
+    </button>
   )
 }
