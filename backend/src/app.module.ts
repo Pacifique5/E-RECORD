@@ -10,7 +10,6 @@ import { FinancialModule } from './modules/financial/financial.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
-import { MigrationModule } from './modules/migration/migration.module';
 import { StudentsModule } from './modules/students/students.module';
 import { InstructorsModule } from './modules/instructors/instructors.module';
 import {
@@ -51,7 +50,6 @@ import { RolesGuard } from './common/guards/roles.guard';
     InventoryModule,
     NotificationsModule,
     DashboardModule,
-    MigrationModule,
     StudentsModule,
     InstructorsModule,
   ],
