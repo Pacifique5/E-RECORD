@@ -6,7 +6,6 @@ import { apiFetch } from "@/lib/api"
 import LoadingSpinner from "@/components/loading-spinner"
 import { STUDENT_CLASSES, UPPER_CLASSES } from "@/lib/student-options"
 import StudentModal, { StudentRecord } from "./modals/student-modal"
-import { useAcademicPeriod } from "@/components/portal/academic-period"
 
 export default function StudentsTable() {
   const [students, setStudents] = useState<StudentRecord[]>([])
@@ -16,7 +15,6 @@ export default function StudentsTable() {
   const [modalOpen, setModalOpen] = useState(false)
   const [mode, setMode] = useState<"add" | "edit" | "view">("add")
   const [selected, setSelected] = useState<StudentRecord | null>(null)
-  const { year } = useAcademicPeriod()
 
   const loadStudents = () => {
     apiFetch("/students")
@@ -58,7 +56,6 @@ export default function StudentsTable() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-gray-500">Classes for {year}. A student moves up one class each new year.</p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {cards.map((card) => (
           <div key={card.title} className="rounded-xl border border-gray-100 bg-white px-5 py-4 text-center">

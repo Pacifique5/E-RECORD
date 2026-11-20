@@ -44,7 +44,7 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const { year, term, termLabel } = useAcademicPeriod()
+  const { year, term } = useAcademicPeriod()
 
   useEffect(() => {
     if (isOpen) {
@@ -137,8 +137,7 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
           <X className="h-4 w-4" />
         </button>
 
-        <h2 className="text-xl font-semibold mb-2">{title}</h2>
-        <p className="mb-6 text-sm text-gray-500">This fee is recorded for {termLabel} {year}.</p>
+        <h2 className="text-xl font-semibold mb-6">{title}</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">

@@ -197,9 +197,6 @@ export default function StudentModal({
                 ))}
               </select>
             </Field>
-            {classThisYear && classThisYear !== formData.classLevel && (
-              <p className="text-sm text-gray-500 md:col-span-2">In {year} this student is in {classThisYear}.</p>
-            )}
             {needsCombination && (
               <Field label="Combination">
                 <select name="combination" value={formData.combination || ""} onChange={handleChange} disabled={isReadOnly} required className={inputClass}>

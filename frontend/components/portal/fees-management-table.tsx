@@ -6,7 +6,6 @@ import { apiFetch } from "@/lib/api"
 import FeeModal from "./modals/fee-modal"
 import LoadingSpinner from "@/components/loading-spinner"
 import { paymentMethodLabel } from "@/lib/payment-method"
-import { useAcademicPeriod } from "@/components/portal/academic-period"
 
 interface Fee {
   id: string
@@ -30,7 +29,6 @@ export default function FeesManagementTable() {
   const [fees, setFees] = useState<Fee[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const { year, termLabel } = useAcademicPeriod()
 
   useEffect(() => {
     fetchFees()
@@ -113,7 +111,6 @@ export default function FeesManagementTable() {
 
   return (
     <div className="rounded-lg bg-white p-4 sm:p-6">
-      <p className="mb-4 text-sm text-gray-500">Fees for {termLabel} {year}. A payment in one term stays separate from the next.</p>
       <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
         <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
           Export Report
