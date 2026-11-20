@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { HeaderUserActions } from '@/components/HeaderUserActions';
 import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/components/brand-logo';
+import { ThemeToggle } from '@/components/portal-theme';
 import { apiFetch } from '@/lib/api';
 
 const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
@@ -193,6 +194,7 @@ const Header = ({ onMenu }: { onMenu: () => void }) => {
             </div>
           )}
         </div>
+        <ThemeToggle />
         <HeaderUserActions user={user} />
       </div>
     </header>
