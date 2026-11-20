@@ -29,7 +29,7 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/registration" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 sm:px-6 rounded-md text-sm sm:text-base transition-colors">
+            <Link href="/registration" prefetch={true} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 sm:px-6 rounded-md text-sm sm:text-base transition-colors">
               Get Started
             </Link>
             <button

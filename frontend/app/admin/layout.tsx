@@ -107,6 +107,7 @@ const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  prefetch={true}
                   className={`flex items-center justify-between space-x-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-blue-600 text-white'

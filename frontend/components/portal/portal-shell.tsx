@@ -178,6 +178,7 @@ function PortalFrame({
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={true}
                 className={cn(
                   "flex items-center space-x-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
                   isActive

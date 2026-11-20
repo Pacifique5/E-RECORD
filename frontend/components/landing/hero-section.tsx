@@ -16,7 +16,7 @@ export default function HeroSection() {
           <p className="text-gray-700 mb-10">All in one system making schools financial management easier and modern</p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/registration" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-colors">
+            <Link href="/registration" prefetch={true} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-colors">
               Get Started
             </Link>
             <button className="bg-white hover:bg-gray-50 text-blue-600 border border-blue-200 py-2 px-6 rounded-md transition-colors">
