@@ -130,7 +130,7 @@ export function HeaderUserActions({
           <DropdownMenuSeparator className="dark:border-gray-700" />
 
           <div className="flex items-center justify-between gap-3 px-2 py-1.5">
-            <span className="text-sm text-gray-700 dark:text-gray-200">Appearance</span>
+            <span className="text-sm text-gray-700 dark:text-gray-200">Mode</span>
             <ThemeToggle />
           </div>
 
