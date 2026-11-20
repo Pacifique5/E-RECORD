@@ -71,7 +71,7 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white bg-opacity-90">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
         <div className="flex justify-center mb-6">
-          <BrandLogo href="/" className="h-12 w-auto" />
+          <BrandLogo href="/" className="h-16 w-auto max-w-full" />
         </div>
         <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
         <p className="text-sm text-gray-600 text-center mb-6">

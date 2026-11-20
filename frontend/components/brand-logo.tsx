@@ -5,7 +5,7 @@ const DARK_LOGO = "/Logo/erecord-logo-dark.svg"
 
 export default function BrandLogo({
   href,
-  className = "h-10 w-auto",
+  className = "h-14 w-auto",
   wide = false,
 }: {
   href?: string

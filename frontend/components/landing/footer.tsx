@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Logo and Social */}
           <div>
-            <BrandLogo href="/" className="h-10 w-auto mb-4" />
+            <BrandLogo href="/" className="mb-4 h-14 w-auto max-w-full" />
             <div className="w-12 h-0.5 bg-gray-200 mb-6"></div>
             <p className="text-gray-600 mb-4">Connect with us:</p>
             <div className="flex space-x-4">

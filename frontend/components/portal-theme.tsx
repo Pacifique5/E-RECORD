@@ -63,22 +63,22 @@ export function ThemeToggle() {
       aria-checked={dark}
       aria-label={dark ? "Dark mode" : "White mode"}
       onClick={() => setMode(dark ? "light" : "dark")}
-      className="relative inline-flex h-9 w-[92px] shrink-0 items-center rounded-full p-1 transition-colors duration-200"
+      className="relative inline-flex h-8 w-[78px] shrink-0 items-center rounded-full p-1 transition-colors duration-200"
       style={{ backgroundColor: dark ? "#3DDC97" : "#D1D5DB" }}
     >
       <span
-        className={`pointer-events-none z-10 w-full text-[11px] font-extrabold uppercase leading-none tracking-wide ${
-          dark ? "pl-1 text-left text-white" : "pr-1 text-right text-gray-600"
+        className={`pointer-events-none z-10 w-full text-[10px] font-extrabold uppercase leading-none ${
+          dark ? "pl-0.5 text-left text-white" : "pr-0.5 text-right text-gray-600"
         }`}
       >
         {dark ? "Dark" : "White"}
       </span>
       <span
         aria-hidden
-        className="pointer-events-none absolute left-1 top-1 h-7 w-7 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-transform duration-200"
+        className="pointer-events-none absolute left-1 top-1 h-6 w-6 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-transform duration-200"
         style={{
           backgroundColor: "#ffffff",
-          transform: dark ? "translateX(56px)" : "translateX(0)",
+          transform: dark ? "translateX(46px)" : "translateX(0)",
         }}
       />
     </button>

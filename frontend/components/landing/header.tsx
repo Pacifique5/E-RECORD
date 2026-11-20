@@ -18,7 +18,7 @@ export default function Header() {
     <header className="w-full py-4 sm:py-6 sticky top-0 z-50 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between gap-3">
-          <BrandLogo href="/" className="h-8 sm:h-10 w-auto" />
+          <BrandLogo href="/" className="h-12 w-auto max-w-[70vw] sm:h-14 sm:max-w-none" />
 
           <nav className="hidden md:flex items-center space-x-8">
             {LINKS.map((link) => (
