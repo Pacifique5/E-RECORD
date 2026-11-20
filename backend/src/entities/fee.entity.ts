@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { School } from './school.entity';
+import { SchoolTerm } from '../common/academic';
 
 export enum FeeType {
   TUITION = 'tuition',
@@ -20,6 +21,12 @@ export enum FeeStatus {
   PAID = 'paid',
   OVERDUE = 'overdue',
   PARTIALLY_PAID = 'partially_paid',
+}
+
+export enum PaymentMethod {
+  MOBILE_MONEY = 'mobile_money',
+  CASH = 'cash',
+  OTHER = 'other',
 }
 
 @Entity('fees')
@@ -61,6 +68,19 @@ export class Fee {
 
   @Column({ nullable: true })
   notes: string;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    nullable: true,
+  })
+  paymentMethod: PaymentMethod;
+
+  @Column({ type: 'int', default: 2026 })
+  academicYear: number;
+
+  @Column({ type: 'enum', enum: SchoolTerm, default: SchoolTerm.FIRST })
+  term: SchoolTerm;
 
   @ManyToOne(() => School, (school) => school.fees)
   school: School;

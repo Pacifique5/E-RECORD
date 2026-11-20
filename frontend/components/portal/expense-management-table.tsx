@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Search, Plus, Edit, Eye } from "lucide-react"
 import { apiFetch } from "@/lib/api"
+import LoadingSpinner from "@/components/loading-spinner"
 
 interface Expense {
   id: string
@@ -60,12 +61,12 @@ export default function ExpenseManagementTable() {
   }
 
   if (loading) {
-    return <div className="p-6">Loading expenses...</div>
+    return <LoadingSpinner />
   }
 
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="flex items-center justify-end mb-6 space-x-2">
+    <div className="rounded-lg bg-white p-4 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
         <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
           Export Report
         </button>
@@ -75,18 +76,18 @@ export default function ExpenseManagementTable() {
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="relative">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search expenses"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-3">
           <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
             <option>All Categories</option>
             <option>Office Supplies</option>
@@ -98,7 +99,7 @@ export default function ExpenseManagementTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[720px]">
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Description</th>

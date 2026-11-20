@@ -26,7 +26,24 @@ export async function apiFetch(path: string, options: ApiOptions = {}) {
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const method = (options.method || "GET").toUpperCase()
+  let requestPath = path
+  if (method === "GET" && typeof window !== "undefined" && !path.includes("year=")) {
+    const raw = localStorage.getItem("e-record-period")
+    if (raw) {
+      try {
+        const period = JSON.parse(raw)
+        if (period.year && period.term) {
+          const join = path.includes("?") ? "&" : "?"
+          requestPath = `${path}${join}year=${encodeURIComponent(period.year)}&term=${encodeURIComponent(period.term)}`
+        }
+      } catch {
+        requestPath = path
+      }
+    }
+  }
+
+  const res = await fetch(`${API_BASE}${requestPath}`, { ...options, headers });
 
   if (!res.ok) {
     const body = await parseResponse(res);

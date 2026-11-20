@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { Search, Plus, Edit, Eye } from "lucide-react"
 import { apiFetch } from "@/lib/api"
+import LoadingSpinner from "@/components/loading-spinner"
+import { paymentMethodLabel } from "@/lib/payment-method"
 
 interface Payroll {
   id: string
@@ -17,6 +19,7 @@ interface Payroll {
   status: string
   paidDate?: string
   notes?: string
+  paymentMethod?: string
   createdAt: string
 }
 
@@ -77,12 +80,12 @@ export default function StaffPayrollTable() {
   }
 
   if (loading) {
-    return <div className="p-6">Loading payrolls...</div>
+    return <LoadingSpinner />
   }
 
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="flex items-center justify-end mb-6 space-x-2">
+    <div className="rounded-lg bg-white p-4 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
         <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
           Generate Payroll
         </button>
@@ -92,18 +95,18 @@ export default function StaffPayrollTable() {
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="relative">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search staff"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-3">
           <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
             <option>All Departments</option>
             <option>Teaching</option>
@@ -121,7 +124,7 @@ export default function StaffPayrollTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[760px]">
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Staff Name</th>
@@ -131,13 +134,14 @@ export default function StaffPayrollTable() {
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Net Salary</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Month</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Payment Method</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredPayrolls.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-gray-500">
+                <td colSpan={9} className="py-8 text-center text-gray-500">
                   {payrolls.length === 0 ? 'No payroll records found' : 'No payroll records match your search'}
                 </td>
               </tr>
@@ -155,6 +159,7 @@ export default function StaffPayrollTable() {
                       {payroll.status}
                     </span>
                   </td>
+                  <td className="py-3 px-4 text-sm text-gray-600">{paymentMethodLabel(payroll.paymentMethod)}</td>
                   <td className="py-3 px-4">
                     <div className="flex space-x-2">
                       <button
@@ -178,12 +183,6 @@ export default function StaffPayrollTable() {
         </table>
       </div>
 
-      <div className="flex items-center justify-center mt-6 space-x-2">
-        <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">← Previous</button>
-        <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded">1</button>
-        <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">2</button>
-        <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">Next →</button>
-      </div>
     </div>
   )
 }

@@ -1,116 +1,127 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { DollarSign, CreditCard, TrendingUp, BarChart3 } from "lucide-react"
+import { BarChart3, CreditCard, DollarSign, Receipt, TrendingDown, TrendingUp } from "lucide-react"
 import { apiFetch } from "@/lib/api"
+import LoadingSpinner from "@/components/loading-spinner"
+
+function formatRwf(amount: number) {
+  return `${Math.round(amount).toLocaleString("en-US")} Rwf`
+}
+
+function monthChange(current: number, previous: number) {
+  if (previous === 0) return current === 0 ? 0 : 100
+  return Math.round(((current - previous) / Math.abs(previous)) * 100)
+}
 
 export default function DashboardStats() {
-  const [stats, setStats] = useState({
-    totalFees: 0,
-    totalPayrolls: 0,
-    totalExpenses: 0,
-    netIncome: 0,
-  })
+  const [fees, setFees] = useState(0)
+  const [payroll, setPayroll] = useState(0)
+  const [expenses, setExpenses] = useState(0)
+  const [trends, setTrends] = useState({ fees: 0, payroll: 0, expenses: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const data = await apiFetch('/dashboard/financial-summary')
-        setStats({
-          totalFees: data.totalIncome || 0,
-          totalPayrolls: data.totalPayroll || 0,
-          totalExpenses: data.totalExpenses || 0,
-          netIncome: data.netProfit || 0,
-        })
-      } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+    Promise.all([
+      apiFetch("/dashboard/financial-summary"),
+      apiFetch("/dashboard/charts/income-expenses").catch(() => []),
+      apiFetch("/dashboard/charts/payroll-trend").catch(() => []),
+    ])
+      .then(([summary, months, payrollMonths]) => {
+        setFees(Number(summary?.totalIncome || 0))
+        setPayroll(Number(summary?.totalPayroll || 0))
+        setExpenses(Number(summary?.totalExpenses || 0))
 
-    fetchStats()
+        const series = Array.isArray(months) ? months : []
+        const latest = series[series.length - 1]
+        const prior = series[series.length - 2]
+        const paySeries = Array.isArray(payrollMonths) ? payrollMonths : []
+        const latestPay = paySeries[paySeries.length - 1]
+        const priorPay = paySeries[paySeries.length - 2]
+        setTrends({
+          fees: latest && prior ? monthChange(Number(latest.income || 0), Number(prior.income || 0)) : 0,
+          expenses: latest && prior ? monthChange(Number(latest.expenses || 0), Number(prior.expenses || 0)) : 0,
+          payroll:
+            latestPay && priorPay
+              ? monthChange(Number(latestPay.amount || latestPay.total || 0), Number(priorPay.amount || priorPay.total || 0))
+              : 0,
+        })
+      })
+      .catch(() => {
+        setFees(0)
+        setPayroll(0)
+        setExpenses(0)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-RW', {
-      style: 'currency',
-      currency: 'RWF',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
+  const usage = fees > 0 ? Math.round(((expenses + payroll) / fees) * 100) : 0
 
-  const statsData = [
+  const cards = [
     {
       title: "Total School Fees",
-      value: formatCurrency(stats.totalFees),
-      change: "15%",
+      value: formatRwf(fees),
+      trend: trends.fees,
+      trendClass: "text-green-500",
       icon: DollarSign,
-      color: "text-white",
-      bgColor: "bg-blue-500",
-      changeColor: "text-blue-500",
-      trendIcon: TrendingUp,
+      iconClass: "bg-blue-600",
     },
     {
       title: "Staff Payments",
-      value: formatCurrency(stats.totalPayrolls),
-      change: "15%",
+      value: formatRwf(payroll),
+      trend: trends.payroll,
+      trendClass: "text-green-500",
       icon: CreditCard,
-      color: "text-white",
-      bgColor: "bg-green-500",
-      changeColor: "text-green-500",
-      trendIcon: TrendingUp,
+      iconClass: "bg-green-500",
     },
     {
       title: "Term Expenses",
-      value: formatCurrency(stats.totalExpenses),
-      change: "15%",
-      icon: TrendingUp,
-      color: "text-white",
-      bgColor: "bg-red-500",
-      changeColor: "text-red-500",
-      trendIcon: TrendingUp,
-    },
-    {
-      title: "Net Income",
-      value: formatCurrency(stats.netIncome),
-      change: stats.netIncome >= 0 ? "Profit" : "Loss",
-      icon: BarChart3,
-      color: "text-white",
-      bgColor: stats.netIncome >= 0 ? "bg-green-500" : "bg-red-500",
-      changeColor: stats.netIncome >= 0 ? "text-green-500" : "text-red-500",
-      trendIcon: TrendingUp,
+      value: formatRwf(expenses),
+      trend: trends.expenses,
+      trendClass: "text-red-500",
+      icon: Receipt,
+      iconClass: "bg-red-500",
     },
   ]
 
+  if (loading) {
+    return <LoadingSpinner />
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {loading ? (
-        <div className="col-span-4 text-center py-8">Loading...</div>
-      ) : (
-        statsData.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">{stat.title}</p>
-                <div className="flex items-baseline space-x-1">
-                  <span className="text-2xl font-semibold text-gray-900">{stat.value}</span>
-                </div>
-                {stat.change && (
-                  <div className={`flex items-center ${stat.changeColor}`}>
-                    <stat.trendIcon className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{stat.change}</span>
-                  </div>
-                )}
-              </div>
-              <div className={`p-2 rounded ${stat.bgColor}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {cards.map((card) => {
+        const rising = card.trend >= 0
+        const TrendIcon = rising ? TrendingUp : TrendingDown
+        return (
+          <div key={card.title} className="bg-white rounded-xl border border-gray-100 px-5 py-4">
+            <p className="text-sm text-gray-500">{card.title}</p>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="min-w-0 text-lg font-semibold leading-tight text-gray-900 sm:text-xl">{card.value}</p>
+              <div className={`shrink-0 h-9 w-9 rounded-md flex items-center justify-center text-white ${card.iconClass}`}>
+                <card.icon className="h-4 w-4" />
               </div>
             </div>
+            <p className={`mt-2 flex items-center text-sm font-medium ${card.trendClass}`}>
+              <TrendIcon className="h-4 w-4 mr-1" />
+              {Math.abs(card.trend)}%
+            </p>
           </div>
-        ))
-      )}
+        )
+      })}
+
+      <div className="bg-white rounded-xl border border-gray-100 px-5 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm text-gray-500">Total Budget Usage</p>
+          <div className="shrink-0 h-9 w-9 rounded-md bg-orange-500 flex items-center justify-center text-white">
+            <BarChart3 className="h-4 w-4" />
+          </div>
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <p className="text-2xl font-semibold text-gray-900">{usage}%</p>
+          <span className="bg-orange-500 text-white text-xs font-medium px-3 py-1 rounded-full">Used</span>
+        </div>
+      </div>
     </div>
   )
 }

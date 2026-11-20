@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { School } from './school.entity';
+import { SchoolTerm } from '../common/academic';
 
 export enum ExpenseCategory {
   UTILITIES = 'utilities',
@@ -47,6 +48,12 @@ export class Expense {
 
   @Column({ nullable: true })
   notes: string;
+
+  @Column({ type: 'int', default: 2026 })
+  academicYear: number;
+
+  @Column({ type: 'enum', enum: SchoolTerm, default: SchoolTerm.FIRST })
+  term: SchoolTerm;
 
   @ManyToOne(() => School, (school) => school.expenses)
   school: School;

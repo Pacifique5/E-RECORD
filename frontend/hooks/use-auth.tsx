@@ -7,6 +7,7 @@ type AuthUser = {
   firstName?: string;
   lastName?: string;
   role?: string;
+  phoneNumber?: string;
   accessToken?: string;
   profilePicture?: string;
   school?: {

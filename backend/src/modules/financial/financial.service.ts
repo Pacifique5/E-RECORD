@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { AcademicQuery, inPeriod, termFromMonth } from '../../common/academic';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Fee } from '../../entities/fee.entity';
@@ -29,14 +30,20 @@ export class FinancialService {
 
   // FEE METHODS
   async createFee(createFeeDto: CreateFeeDto): Promise<FeeResponseDto> {
-    const fee = this.feeRepository.create(createFeeDto);
+    const due = new Date(createFeeDto.dueDate);
+    if (Number.isNaN(due.getTime())) throw new BadRequestException('Enter a valid due date');
+    const fee = this.feeRepository.create({
+      ...createFeeDto,
+      academicYear: createFeeDto.academicYear || due.getFullYear(),
+      term: createFeeDto.term || termFromMonth(due.getMonth()),
+    });
     await this.feeRepository.save(fee);
     return this.toFeeResponseDto(fee);
   }
 
-  async getAllFees(): Promise<FeeResponseDto[]> {
+  async getAllFees(period: AcademicQuery = {}): Promise<FeeResponseDto[]> {
     const fees = await this.feeRepository.find();
-    return fees.map((fee) => this.toFeeResponseDto(fee));
+    return fees.filter((fee) => inPeriod(fee, period)).map((fee) => this.toFeeResponseDto(fee));
   }
 
   async getFeeById(id: string): Promise<FeeResponseDto> {
@@ -53,6 +60,9 @@ export class FinancialService {
       throw new NotFoundException(`Fee with ID ${id} not found`);
     }
 
+    if (updateFeeDto.amountPaid != null && Number(updateFeeDto.amountPaid) > Number(fee.amount)) {
+      throw new BadRequestException('Amount paid cannot be greater than the fee');
+    }
     Object.assign(fee, updateFeeDto);
     await this.feeRepository.save(fee);
     return this.toFeeResponseDto(fee);
@@ -68,19 +78,19 @@ export class FinancialService {
     return { message: 'Fee deleted successfully' };
   }
 
-  async getFeeStats(): Promise<{
+  async getFeeStats(period: AcademicQuery = {}): Promise<{
     totalPaid: number;
     totalUnpaid: number;
     totalStudentsPaid: number;
     totalStudentsUnpaid: number;
   }> {
-    const fees = await this.feeRepository.find();
+    const fees = (await this.feeRepository.find()).filter((fee) => inPeriod(fee, period));
     
     const paidFees = fees.filter(fee => fee.status === 'paid');
     const unpaidFees = fees.filter(fee => fee.status !== 'paid');
     
-    const totalPaid = paidFees.reduce((sum, fee) => sum + fee.amountPaid, 0);
-    const totalUnpaid = unpaidFees.reduce((sum, fee) => sum + (fee.amount - fee.amountPaid), 0);
+    const totalPaid = paidFees.reduce((sum, fee) => sum + Number(fee.amountPaid), 0);
+    const totalUnpaid = unpaidFees.reduce((sum, fee) => sum + (Number(fee.amount) - Number(fee.amountPaid)), 0);
     
     return {
       totalPaid,
@@ -92,14 +102,20 @@ export class FinancialService {
 
   // EXPENSE METHODS
   async createExpense(createExpenseDto: CreateExpenseDto): Promise<ExpenseResponseDto> {
-    const expense = this.expenseRepository.create(createExpenseDto);
+    const date = new Date(createExpenseDto.date);
+    if (Number.isNaN(date.getTime())) throw new BadRequestException('Enter a valid expense date');
+    const expense = this.expenseRepository.create({
+      ...createExpenseDto,
+      academicYear: createExpenseDto.academicYear || date.getFullYear(),
+      term: createExpenseDto.term || termFromMonth(date.getMonth()),
+    });
     await this.expenseRepository.save(expense);
     return this.toExpenseResponseDto(expense);
   }
 
-  async getAllExpenses(): Promise<ExpenseResponseDto[]> {
+  async getAllExpenses(period: AcademicQuery = {}): Promise<ExpenseResponseDto[]> {
     const expenses = await this.expenseRepository.find();
-    return expenses.map((expense) => this.toExpenseResponseDto(expense));
+    return expenses.filter((expense) => inPeriod(expense, period)).map((expense) => this.toExpenseResponseDto(expense));
   }
 
   async getExpenseById(id: string): Promise<ExpenseResponseDto> {
@@ -136,14 +152,25 @@ export class FinancialService {
 
   // PAYROLL METHODS
   async createPayroll(createPayrollDto: CreatePayrollDto): Promise<PayrollResponseDto> {
-    const payroll = this.payrollRepository.create(createPayrollDto);
+    const month = new Date(createPayrollDto.payrollMonth);
+    if (Number.isNaN(month.getTime())) throw new BadRequestException('Enter a valid payroll month');
+    const allowances = Number(createPayrollDto.allowances || 0);
+    const deductions = Number(createPayrollDto.deductions || 0);
+    if (deductions > Number(createPayrollDto.baseSalary) + allowances) {
+      throw new BadRequestException('Deductions cannot be greater than salary and allowances');
+    }
+    const payroll = this.payrollRepository.create({
+      ...createPayrollDto,
+      academicYear: createPayrollDto.academicYear || month.getFullYear(),
+      term: createPayrollDto.term || termFromMonth(month.getMonth()),
+    });
     await this.payrollRepository.save(payroll);
     return this.toPayrollResponseDto(payroll);
   }
 
-  async getAllPayrolls(): Promise<PayrollResponseDto[]> {
+  async getAllPayrolls(period: AcademicQuery = {}): Promise<PayrollResponseDto[]> {
     const payrolls = await this.payrollRepository.find();
-    return payrolls.map((payroll) => this.toPayrollResponseDto(payroll));
+    return payrolls.filter((payroll) => inPeriod(payroll, period)).map((payroll) => this.toPayrollResponseDto(payroll));
   }
 
   async getPayrollById(id: string): Promise<PayrollResponseDto> {
@@ -190,6 +217,9 @@ export class FinancialService {
       dueDate: fee.dueDate,
       paidDate: fee.paidDate,
       notes: fee.notes,
+      paymentMethod: fee.paymentMethod,
+      academicYear: Number(fee.academicYear),
+      term: fee.term,
       createdAt: fee.createdAt,
     };
   }
@@ -204,6 +234,8 @@ export class FinancialService {
       vendor: expense.vendor,
       invoiceNumber: expense.invoiceNumber,
       notes: expense.notes,
+      academicYear: Number(expense.academicYear),
+      term: expense.term,
       createdAt: expense.createdAt,
     };
   }
@@ -222,6 +254,9 @@ export class FinancialService {
       status: payroll.status,
       paidDate: payroll.paidDate,
       notes: payroll.notes,
+      paymentMethod: payroll.paymentMethod,
+      academicYear: Number(payroll.academicYear),
+      term: payroll.term,
       createdAt: payroll.createdAt,
     };
   }

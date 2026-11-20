@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum, IsInt, Min, Max } from 'class-validator';
 import { ExpenseCategory } from '../../entities';
+import { SchoolTerm } from '../academic';
 
 export class CreateExpenseDto {
   @IsString()
@@ -7,8 +8,18 @@ export class CreateExpenseDto {
   description: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @Min(1, { message: 'Amount must be greater than 0' })
   amount: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(2020)
+  @Max(2035)
+  academicYear?: number;
+
+  @IsOptional()
+  @IsEnum(SchoolTerm)
+  term?: SchoolTerm;
 
   @IsEnum(ExpenseCategory)
   @IsOptional()
@@ -37,7 +48,18 @@ export class UpdateExpenseDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(1)
   amount?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(2020)
+  @Max(2035)
+  academicYear?: number;
+
+  @IsOptional()
+  @IsEnum(SchoolTerm)
+  term?: SchoolTerm;
 
   @IsOptional()
   @IsEnum(ExpenseCategory)
@@ -56,5 +78,7 @@ export class ExpenseResponseDto {
   vendor?: string;
   invoiceNumber?: string;
   notes?: string;
+  academicYear: number;
+  term: SchoolTerm;
   createdAt: Date;
 }

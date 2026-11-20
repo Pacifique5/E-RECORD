@@ -5,3 +5,5 @@ export * from './fee.dto';
 export * from './expense.dto';
 export * from './payroll.dto';
 export * from './inventory.dto';
+export * from './student.dto';
+export * from './instructor.dto';

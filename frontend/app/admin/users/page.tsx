@@ -53,7 +53,7 @@ const ActiveUsersTable = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm mt-8 p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Active Users</h2>
           <p className="text-gray-600 text-sm mt-1">Total users: 1000000</p>
@@ -63,12 +63,12 @@ const ActiveUsersTable = () => {
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative">
           <input
             type="text"
             placeholder="Search User"
-            className="pl-8 pr-4 py-2 border rounded-lg w-[320px] focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
+            className="w-full max-w-xs pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
           />
           <svg
             className="absolute left-2 top-1/2 transform -translate-y-1/2"
@@ -94,7 +94,7 @@ const ActiveUsersTable = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b">
               <th className="text-left py-4 px-4 font-medium">User Name</th>

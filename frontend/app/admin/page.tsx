@@ -1,24 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell
-} from 'recharts';
 import { apiFetch } from '@/lib/api';
+import LoadingSpinner from '@/components/loading-spinner';
 
 const StatCard = ({ title, value, icon, trend }: { title: string; value: string; icon: string; trend?: string }) => (
   <div className="bg-white p-6 rounded-lg">
@@ -67,12 +51,12 @@ const SchoolRequestTable = ({ requests }: { requests: any[] }) => {
   
   return (
     <div className="bg-white rounded-lg p-6 mt-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Schools Request</h2>
         <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="text-left border-b border-gray-200">
               <th className="pb-3 text-sm font-medium text-gray-600">School Names</th>
@@ -119,12 +103,12 @@ const RegisteredSchoolsTable = ({ schools }: { schools: any[] }) => {
   
   return (
     <div className="bg-white rounded-lg p-6 mt-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Registered Schools</h2>
         <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="text-left border-b border-gray-200">
               <th className="pb-3 text-sm font-medium text-gray-600">School Names</th>
@@ -167,7 +151,7 @@ const ActiveUsersTable = ({ users, totalUsers }: { users: any[]; totalUsers: num
   
   return (
     <div className="bg-white rounded-lg p-6 mt-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Active Users</h2>
           <p className="text-sm text-gray-600">Total users: {totalUsers}</p>
@@ -175,7 +159,7 @@ const ActiveUsersTable = ({ users, totalUsers }: { users: any[]; totalUsers: num
         <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">View All</button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="text-left border-b border-gray-200">
               <th className="pb-3 text-sm font-medium text-gray-600">User Name</th>
@@ -210,109 +194,15 @@ const ActiveUsersTable = ({ users, totalUsers }: { users: any[]; totalUsers: num
   );
 };
 
-const UserGrowthChart = ({ data }: { data: any[] }) => (
-  <div className="bg-white rounded-lg p-6 mt-8">
-    <h2 className="text-lg font-semibold mb-4">User Growth</h2>
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="users" stroke="#1A75FF" strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const SchoolRegistrationChart = ({ data }: { data: any[] }) => (
-  <div className="bg-white rounded-lg p-6 mt-8">
-    <h2 className="text-lg font-semibold mb-4">School Registrations</h2>
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="schools" fill="#FF9533" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const PaymentDistributionChart = ({ data }: { data: any[] }) => {
-  const COLORS = ['#1A75FF', '#FF9533', '#00BA34'];
-
-  return (
-    <div className="bg-white rounded-lg p-6 mt-8">
-      <h2 className="text-lg font-semibold mb-4">Payment Distribution</h2>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
-const UserActivityChart = ({ data }: { data: any[] }) => (
-  <div className="bg-white rounded-lg p-6 mt-8">
-    <h2 className="text-lg font-semibold mb-4">User Activity by Role</h2>
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Area type="monotone" dataKey="students" stackId="1" stroke="#1A75FF" fill="#1A75FF" />
-          <Area type="monotone" dataKey="teachers" stackId="1" stroke="#FF9533" fill="#FF9533" />
-          <Area type="monotone" dataKey="admins" stackId="1" stroke="#00BA34" fill="#00BA34" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalSchools: 0,
     totalUsers: 0,
     totalPayments: 0,
   })
-  const [dashboardData, setDashboardData] = useState({
-    userGrowth: [],
-    schoolRegistrations: [],
-    paymentDistribution: [],
-    userActivity: []
-  });
-  const [schoolRequests, setSchoolRequests] = useState([]);
-  const [registeredSchools, setRegisteredSchools] = useState([]);
-  const [activeUsers, setActiveUsers] = useState([]);
+  const [schoolRequests, setSchoolRequests] = useState<any[]>([])
+  const [registeredSchools, setRegisteredSchools] = useState<any[]>([])
+  const [activeUsers, setActiveUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -361,38 +251,6 @@ export default function AdminDashboard() {
           setActiveUsers([]);
         }
 
-        // Mock data for charts (you can replace with real API calls)
-        setDashboardData({
-          userGrowth: [
-            { month: 'Jan', users: 100 },
-            { month: 'Feb', users: 150 },
-            { month: 'Mar', users: 200 },
-            { month: 'Apr', users: 280 },
-            { month: 'May', users: 350 },
-            { month: 'Jun', users: 420 },
-          ],
-          schoolRegistrations: [
-            { month: 'Jan', schools: 5 },
-            { month: 'Feb', schools: 8 },
-            { month: 'Mar', schools: 12 },
-            { month: 'Apr', schools: 15 },
-            { month: 'May', schools: 18 },
-            { month: 'Jun', schools: 22 },
-          ],
-          paymentDistribution: [
-            { name: 'Tuition', value: 60 },
-            { name: 'Transport', value: 25 },
-            { name: 'Meals', value: 15 },
-          ],
-          userActivity: [
-            { month: 'Jan', students: 80, teachers: 15, admins: 5 },
-            { month: 'Feb', students: 120, teachers: 20, admins: 8 },
-            { month: 'Mar', students: 160, teachers: 25, admins: 10 },
-            { month: 'Apr', students: 200, teachers: 30, admins: 12 },
-            { month: 'May', students: 250, teachers: 35, admins: 15 },
-            { month: 'Jun', students: 300, teachers: 40, admins: 18 },
-          ]
-        });
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -413,11 +271,7 @@ export default function AdminDashboard() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1A75FF]"></div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   if (error) {
@@ -431,16 +285,9 @@ export default function AdminDashboard() {
   return (
     <div className="font-inter">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total School" value={stats.totalSchools.toString()} icon="school" trend="15%" />
-        <StatCard title="Total Users" value={stats.totalUsers.toString()} icon="users" trend="15%" />
-        <StatCard title="Total Payments" value={formatCurrency(stats.totalPayments)} icon="payments" trend="15%" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <UserGrowthChart data={dashboardData.userGrowth} />
-        <SchoolRegistrationChart data={dashboardData.schoolRegistrations} />
-        <PaymentDistributionChart data={dashboardData.paymentDistribution} />
-        <UserActivityChart data={dashboardData.userActivity} />
+        <StatCard title="Total School" value={stats.totalSchools.toString()} icon="school" />
+        <StatCard title="Total Users" value={stats.totalUsers.toString()} icon="users" />
+        <StatCard title="Total Payments" value={formatCurrency(stats.totalPayments)} icon="payments" />
       </div>
 
       <SchoolRequestTable requests={schoolRequests} />

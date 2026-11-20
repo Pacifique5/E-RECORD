@@ -1,55 +1,38 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { useEffect, useState } from "react"
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { apiFetch } from "@/lib/api"
 
-const data = [
-  { month: "Jan", amount: 150 },
-  { month: "Feb", amount: 145 },
-  { month: "Mar", amount: 155 },
-  { month: "Apr", amount: 150 },
-  { month: "May", amount: 160 },
-  { month: "Jun", amount: 155 },
-  { month: "Jul", amount: 165 },
-  { month: "Aug", amount: 160 },
-  { month: "Sep", amount: 170 },
-  { month: "Oct", amount: 165 },
-  { month: "Nov", amount: 175 },
-  { month: "Dec", amount: 170 },
-]
+type Point = { month: string; amount: number }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
-        <p className="text-sm font-medium text-gray-900">{label}</p>
-        <p className="text-sm mt-2">
-          <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-          Amount: {payload[0].value}M Rwf
-        </p>
-      </div>
-    )
-  }
-  return null
+function compactAxis(value: number) {
+  const amount = Math.abs(value)
+  if (amount >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`
+  if (amount >= 1_000) return `${Math.round(value / 1_000)}k`
+  return `${Math.round(value)}`
 }
 
 export default function PayrollTrendChart() {
+  const [data, setData] = useState<Point[]>([])
+
+  useEffect(() => {
+    apiFetch("/dashboard/charts/payroll-trend")
+      .then((rows: Point[]) => setData(Array.isArray(rows) ? rows : []))
+      .catch(() => setData([]))
+  }, [])
+
   return (
-    <div className="bg-white rounded-lg p-6">
+    <div className="rounded-xl border border-gray-100 bg-white p-4 sm:p-6">
+      <h2 className="text-base font-semibold text-gray-900 mb-4">Payroll Trend Overview</h2>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            <Bar 
-              dataKey="amount" 
-              fill="#3b82f6" 
-              name="Payroll Amount"
-              radius={[4, 4, 0, 0]}
-              activeBar={{ fill: "#2563eb" }}
-            />
+            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 11 }} width={36} domain={[0, (max: number) => (max > 0 ? max : 1)]} tickFormatter={(value) => compactAxis(Number(value))} />
+            <Tooltip formatter={(value: number) => `${Math.round(Number(value))} Rwf`} />
+            <Bar dataKey="amount" fill="#2563eb" radius={[4, 4, 0, 0]} name="Payroll" />
           </BarChart>
         </ResponsiveContainer>
       </div>

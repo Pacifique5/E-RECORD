@@ -4,9 +4,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HeaderUserActions } from '@/components/HeaderUserActions';
+import BrandLogo from '@/components/brand-logo';
 import { apiFetch } from '@/lib/api';
 
-const Sidebar = () => {
+const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const pathname = usePathname();
   const [notificationCount, setNotificationCount] = useState(0);
 
@@ -79,12 +80,24 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-96 min-h-screen bg-slate-900 shadow-lg fixed top-0 left-0 z-40 h-full rounded-r-3xl">
-      <div className="p-6 flex flex-col gap-2">
-        <h1 className="text-xl font-semibold text-white">E-Record</h1>
-        <div className="bg-[#1A75FF] text-white px-4 py-1.5 rounded-md text-sm font-medium w-fit">
-          Admin
+    <div className={`w-72 max-w-[85vw] min-h-screen bg-white border-r border-gray-200 fixed top-0 left-0 z-50 h-full overflow-y-auto transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <div className="px-6 py-6 border-b border-gray-100 flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <BrandLogo href="/admin" className="h-9 w-auto" />
+          <div className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium w-fit">
+            Admin
+          </div>
         </div>
+        <button
+          type="button"
+          className="lg:hidden rounded-md p-1 text-gray-500 hover:bg-gray-100"
+          aria-label="Close menu"
+          onClick={onClose}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
       </div>
       <nav className="p-4">
         <ul className="space-y-2">
@@ -94,10 +107,10 @@ const Sidebar = () => {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center justify-between space-x-3 p-3 rounded-2xl text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center justify-between space-x-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-[#1A75FF] text-white'
-                      : 'text-gray-300 hover:bg-slate-800 hover:text-white hover:translate-x-1'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -119,7 +132,7 @@ const Sidebar = () => {
   );
 };
 
-const Header = () => {
+const Header = ({ onMenu }: { onMenu: () => void }) => {
   const [year, setYear] = useState(2025);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const years = [2023, 2024, 2025, 2026, 2027];
@@ -143,9 +156,19 @@ const Header = () => {
   };
 
   return (
-    <header className="flex items-center justify-between px-8 py-6 bg-white shadow-sm sticky top-0 z-30">
-      <h1 className="text-2xl font-semibold">Welcome to our platform Admin</h1>
-      <div className="flex items-center gap-4 relative">
+    <header className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-4 bg-white shadow-sm sticky top-0 z-30">
+      <button
+        type="button"
+        className="lg:hidden inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-700"
+        aria-label="Open menu"
+        onClick={onMenu}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      </button>
+      <h1 className="min-w-0 flex-1 truncate text-base sm:text-xl lg:text-2xl font-semibold">Welcome to our platform Admin</h1>
+      <div className="flex items-center gap-2 sm:gap-4 relative shrink-0">
         <div ref={dropdownRef} className="relative">
           <button
             className="text-sm font-medium px-3 py-1 rounded hover:bg-gray-100 border border-gray-200"
@@ -181,12 +204,27 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col ml-96">
-        <Header />
-        <main className="flex-1 p-8">
+      {menuOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-72">
+        <Header onMenu={() => setMenuOpen(true)} />
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>

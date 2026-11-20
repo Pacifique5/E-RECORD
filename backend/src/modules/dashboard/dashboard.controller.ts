@@ -1,4 +1,5 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
+import { parsePeriod } from '../../common/academic';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,27 +24,42 @@ export class DashboardController {
   }
 
   @Get('stats')
-  async getDashboardStats(@Req() req: { user: { userId: string; role: string } }) {
-    // Admin gets all data, others get school-specific data
+  async getDashboardStats(
+    @Req() req: { user: { userId: string; role: string } },
+    @Query('year') year?: string,
+    @Query('term') term?: string,
+  ) {
     const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
-    return this.dashboardService.getDashboardStats(schoolId);
+    return this.dashboardService.getDashboardStats(schoolId, parsePeriod(year, term));
   }
 
   @Get('financial-summary')
-  async getFinancialSummary(@Req() req: { user: { userId: string; role: string } }) {
+  async getFinancialSummary(
+    @Req() req: { user: { userId: string; role: string } },
+    @Query('year') year?: string,
+    @Query('term') term?: string,
+  ) {
     const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
-    return this.dashboardService.getFinancialSummary(schoolId);
+    return this.dashboardService.getFinancialSummary(schoolId, parsePeriod(year, term));
   }
 
   @Get('charts/income-expenses')
-  async getIncomeExpensesData(@Req() req: { user: { userId: string; role: string } }) {
+  async getIncomeExpensesData(
+    @Req() req: { user: { userId: string; role: string } },
+    @Query('year') year?: string,
+    @Query('term') term?: string,
+  ) {
     const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
-    return this.dashboardService.getIncomeExpensesData(schoolId);
+    return this.dashboardService.getIncomeExpensesData(schoolId, parsePeriod(year, term));
   }
 
   @Get('charts/payroll-trend')
-  async getPayrollTrendData(@Req() req: { user: { userId: string; role: string } }) {
+  async getPayrollTrendData(
+    @Req() req: { user: { userId: string; role: string } },
+    @Query('year') year?: string,
+    @Query('term') term?: string,
+  ) {
     const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
-    return this.dashboardService.getPayrollTrendData(schoolId);
+    return this.dashboardService.getPayrollTrendData(schoolId, parsePeriod(year, term));
   }
 }

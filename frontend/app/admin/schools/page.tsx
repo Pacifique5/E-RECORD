@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { apiFetch } from '@/lib/api';
 import SchoolModal from "@/components/portal/modals/school-modal";
+import LoadingSpinner from "@/components/loading-spinner";
 
 interface School {
   id: string;
@@ -144,12 +145,12 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
   const visibleSchools = showAll ? filteredSchools : filteredSchools.slice(0, 5);
 
   if (loading) {
-    return <div className="bg-white rounded-lg shadow-sm mt-8 p-6">Loading school requests...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="bg-white rounded-lg shadow-sm mt-8 p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Schools Request ({schools.length})</h2>
         <div className="flex space-x-2">
           <button 
@@ -219,14 +220,14 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
           ❌ {errorMessage}
         </div>
       )}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative">
           <input
             type="text"
             placeholder="Search School"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
+            className="w-full max-w-xs pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
           />
           <svg
             className="absolute left-2 top-1/2 transform -translate-y-1/2"
@@ -251,7 +252,7 @@ const SchoolRequestTable = ({ onViewRequest, onAccept, onReject }: any) => {
         </select>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b">
               <th className="text-left py-4 px-4 font-medium">School Names</th>
@@ -401,12 +402,12 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
   const visibleSchools = showAll ? filteredSchools : filteredSchools.slice(0, 5);
 
   if (loading) {
-    return <div className="bg-white rounded-lg shadow-sm mt-8 p-6">Loading active schools...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="bg-white rounded-lg shadow-sm mt-8 p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Active Schools ({activeSchools.length})</h2>
         <div className="flex space-x-2">
           <button 
@@ -421,14 +422,14 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
           </button>
         </div>
       </div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative">
           <input
             type="text"
             placeholder="Search School"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
+            className="w-full max-w-xs pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
           />
           <svg
             className="absolute left-2 top-1/2 transform -translate-y-1/2"
@@ -450,7 +451,7 @@ const ActiveSchoolsTable = ({ onViewInfo, onRemove, refreshTrigger }: any) => {
         </select>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b">
               <th className="text-left py-4 px-4 font-medium">School Names</th>
@@ -551,16 +552,16 @@ const RegisteredSchoolsTable = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm mt-8 p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Registered Schools</h2>
         <button className="bg-[#1A75FF] text-white px-4 py-2 rounded font-medium shadow hover:bg-blue-700 transition-colors">Load more</button>
       </div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative">
           <input
             type="text"
             placeholder="Search School"
-            className="pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
+            className="w-full max-w-xs pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A75FF] focus:border-transparent"
           />
           <svg
             className="absolute left-2 top-1/2 transform -translate-y-1/2"
@@ -587,7 +588,7 @@ const RegisteredSchoolsTable = () => {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b">
               <th className="text-left py-4 px-4 font-medium">School Names</th>
@@ -681,7 +682,7 @@ export default function SchoolsPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <LoadingSpinner fullScreen />;
   }
 
   return (

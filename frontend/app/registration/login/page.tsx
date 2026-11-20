@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/use-auth';
+import BrandLogo from '@/components/brand-logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,7 +70,10 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white bg-opacity-90">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">Login to E-Record</h1>
+        <div className="flex justify-center mb-6">
+          <BrandLogo href="/" className="h-12 w-auto" />
+        </div>
+        <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
         <p className="text-sm text-gray-600 text-center mb-6">
           Access your dashboard based on your role
         </p>

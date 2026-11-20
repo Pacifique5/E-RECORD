@@ -1,41 +1,34 @@
 "use client"
 
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { useEffect, useState } from "react"
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { apiFetch } from "@/lib/api"
 
-const data = [
-  { month: "Jan", income: 150, expenses: 180 },
-  { month: "Feb", income: 170, expenses: 160 },
-  { month: "Mar", income: 180, expenses: 170 },
-  { month: "Apr", income: 160, expenses: 190 },
-  { month: "May", income: 200, expenses: 220 },
-  { month: "Jun", income: 190, expenses: 180 },
-  { month: "Jul", income: 220, expenses: 170 },
-  { month: "Aug", income: 240, expenses: 160 },
-  { month: "Sep", income: 250, expenses: 165 },
-  { month: "Oct", income: 230, expenses: 190 },
-  { month: "Nov", income: 210, expenses: 170 },
-  { month: "Dec", income: 200, expenses: 160 },
-]
+type Point = { month: string; income: number; expenses: number }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-3 border border-gray-100 rounded-lg shadow-lg">
-        <p className="text-xs text-gray-500 mb-1">This Month</p>
-        <p className="text-lg font-semibold">220,342,123</p>
-        <p className="text-xs text-gray-500">May</p>
-      </div>
-    )
-  }
-  return null
+function compactAxis(value: number) {
+  const amount = Math.abs(value)
+  if (amount >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`
+  if (amount >= 1_000) return `${Math.round(value / 1_000)}k`
+  return `${Math.round(value)}`
 }
 
 export default function IncomeExpensesChart() {
+  const [data, setData] = useState<Point[]>([])
+
+  useEffect(() => {
+    apiFetch("/dashboard/charts/income-expenses")
+      .then((rows: Point[]) => setData(Array.isArray(rows) ? rows : []))
+      .catch(() => setData([]))
+  }, [])
+
+  const hasActivity = data.some((point) => Number(point.income) > 0 || Number(point.expenses) > 0)
+
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Income Expenses chart</h2>
-        <div className="flex items-center space-x-6">
+    <div className="rounded-lg border border-gray-100 bg-white p-4 sm:p-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-semibold text-gray-900">Income Expenses chart</h2>
+        <div className="flex items-center gap-4 sm:gap-6">
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-sm bg-green-500 mr-2"></div>
             <span className="text-sm text-gray-600">Income</span>
@@ -47,55 +40,30 @@ export default function IncomeExpensesChart() {
         </div>
       </div>
 
+      {!hasActivity && (
+        <p className="mb-3 text-sm text-gray-500">No income or expenses recorded yet.</p>
+      )}
       <div className="h-[240px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-            <defs>
-              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} stroke="#f0f0f0" />
-            <XAxis 
-              dataKey="month" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              tickFormatter={(value) => `${value}M`}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="income"
-              stroke="#22c55e"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 2 }}
-              fillOpacity={1}
-              fill="url(#incomeGradient)"
-            />
-            <Line
-              type="monotone"
-              dataKey="expenses"
-              stroke="#ef4444"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 2 }}
-              fillOpacity={1}
-              fill="url(#expensesGradient)"
-            />
-          </LineChart>
-        </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22c55e" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.18} />
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 11 }} width={36} tickFormatter={(value) => compactAxis(Number(value))} />
+              <Tooltip formatter={(value: number) => Math.round(Number(value)).toLocaleString()} />
+              <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#incomeFill)" dot={false} />
+              <Area type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={2} fill="url(#expenseFill)" dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
       </div>
     </div>
   )

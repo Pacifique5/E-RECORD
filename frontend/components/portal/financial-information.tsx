@@ -1,9 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { apiFetch } from "@/lib/api"
+
+function money(amount: number) {
+  return `${Math.round(amount)} Rwf`
+}
 
 export default function FinancialInformation() {
   const [activeTab, setActiveTab] = useState("profit-loss")
+  const [netCash, setNetCash] = useState(0)
+  const [incomeShare, setIncomeShare] = useState(0)
+  const [expenseShare, setExpenseShare] = useState(0)
+  const [profitLossData, setProfitLossData] = useState<{ category: string; amount: string; type: string }[]>([])
+  const [cashFlowData, setCashFlowData] = useState<{ period: string; inflow: string; outflow: string; net: string }[]>([])
+  const [balanceSheetAssets, setBalanceSheetAssets] = useState<{ asset: string; amount: string }[]>([])
+  const [balanceSheetLiabilities, setBalanceSheetLiabilities] = useState<{ liability: string; amount: string }[]>([])
+
+  useEffect(() => {
+    Promise.all([
+      apiFetch("/dashboard/financial-summary"),
+      apiFetch("/dashboard/charts/income-expenses").catch(() => []),
+    ])
+      .then(([summary, months]) => {
+        const income = Number(summary?.totalIncome || 0)
+        const expenses = Number(summary?.totalExpenses || 0)
+        const payroll = Number(summary?.totalPayroll || 0)
+        const net = Number(summary?.netProfit || 0)
+        const base = income + expenses + payroll
+        setNetCash(net)
+        setIncomeShare(base ? Math.round((income / base) * 100) : 0)
+        setExpenseShare(base ? Math.round(((expenses + payroll) / base) * 100) : 0)
+        setProfitLossData([
+          { category: "School Fees", amount: money(income), type: "income" },
+          { category: "Term Expenses", amount: money(expenses), type: "expense" },
+          { category: "Staff Payroll", amount: money(payroll), type: "expense" },
+          { category: "Net Profit", amount: money(net), type: "profit" },
+        ])
+        setCashFlowData(
+          (Array.isArray(months) ? months : []).map((month: { month: string; income: number; expenses: number }) => ({
+            period: month.month,
+            inflow: money(Number(month.income || 0)),
+            outflow: money(Number(month.expenses || 0)),
+            net: money(Number(month.income || 0) - Number(month.expenses || 0)),
+          }))
+        )
+        setBalanceSheetAssets([{ asset: "School Fees", amount: money(income) }])
+        setBalanceSheetLiabilities([
+          { liability: "Expenses", amount: money(expenses) },
+          { liability: "Payroll", amount: money(payroll) },
+        ])
+      })
+      .catch(() => setNetCash(0))
+  }, [])
 
   const tabs = [
     { id: "profit-loss", label: "Profit and Loss Statement" },
@@ -12,37 +61,10 @@ export default function FinancialInformation() {
     { id: "custom-reports", label: "Custom Reports" },
   ]
 
-  // Data for each tab
-  const profitLossData = [
-    { category: "School Fees", amount: "850000", type: "income" },
-    { category: "School Materials", amount: "850000", type: "expense" },
-    { category: "School Fees", amount: "850000", type: "income" },
-    { category: "School Fees", amount: "850000", type: "expense" },
-    { category: "School Fees", amount: "850000", type: "income" },
-    { category: "Net Profit", amount: "850000", type: "profit" },
-  ]
-  const cashFlowData = [
-    { period: "January", inflow: "100000", outflow: "100000", net: "100000" },
-    { period: "February", inflow: "100000", outflow: "100000", net: "100000" },
-    { period: "March", inflow: "100000", outflow: "100000", net: "100000" },
-    { period: "April", inflow: "100000", outflow: "100000", net: "100000" },
-  ]
-  const balanceSheetAssets = [
-    { asset: "School Fees", amount: "850000" },
-    { asset: "School Materials", amount: "850000" },
-    { asset: "School Fees", amount: "850000" },
-  ]
-  const balanceSheetLiabilities = [
-    { liability: "School Fees", amount: "850000" },
-    { liability: "School Materials", amount: "850000" },
-    { liability: "School Fees", amount: "850000" },
-  ]
-  // Custom Reports: just a placeholder for now
-
   return (
-    <div className="bg-white rounded-lg p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Financial Information</h2>
-      <div className="flex space-x-1 mb-6">
+    <div className="rounded-lg bg-white p-4 sm:p-6">
+      <h2 className="mb-6 text-lg font-semibold text-gray-900">Financial Information</h2>
+      <div className="mb-6 flex flex-wrap gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -58,8 +80,8 @@ export default function FinancialInformation() {
       {/* Tab Content */}
       {activeTab === "profit-loss" && (
         <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <table className="w-full">
+          <div className="lg:col-span-2 overflow-x-auto">
+            <table className="w-full min-w-[480px]">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Category</th>
@@ -92,24 +114,24 @@ export default function FinancialInformation() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Income</span>
-                <span className="text-sm font-medium text-gray-900">55%</span>
+                <span className="text-sm font-medium text-gray-900">{incomeShare}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="h-2 rounded-full bg-green-500" style={{ width: "55%" }}></div>
+                <div className="h-2 rounded-full bg-green-500" style={{ width: `${incomeShare}%` }}></div>
               </div>
             </div>
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Expenses</span>
-                <span className="text-sm font-medium text-gray-900">45%</span>
+                <span className="text-sm font-medium text-gray-900">{expenseShare}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="h-2 rounded-full bg-red-500" style={{ width: "45%" }}></div>
+                <div className="h-2 rounded-full bg-red-500" style={{ width: `${expenseShare}%` }}></div>
               </div>
             </div>
             <div className="pt-4">
               <h3 className="text-sm font-medium text-gray-900 mb-3">Action</h3>
-              <div className="flex space-x-3">
+              <div className="flex flex-wrap gap-3">
                 <button className="bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700">Export Report</button>
                 <button className="bg-white border border-blue-600 text-blue-600 py-2 px-4 rounded-md text-sm hover:bg-blue-50">Print Report</button>
                 <button className="bg-white border border-gray-300 text-gray-600 py-2 px-4 rounded-md text-sm hover:bg-gray-50">Share via gmail</button>
@@ -120,7 +142,8 @@ export default function FinancialInformation() {
       )}
       {activeTab === "cash-flow" && (
         <div>
-          <table className="w-full mb-8">
+          <div className="overflow-x-auto">
+          <table className="mb-8 w-full min-w-[560px]">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Periods</th>
@@ -140,7 +163,8 @@ export default function FinancialInformation() {
               ))}
             </tbody>
           </table>
-          <div className="flex items-center space-x-3 mt-6">
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <button className="bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700">Export Report</button>
             <button className="bg-white border border-blue-600 text-blue-600 py-2 px-4 rounded-md text-sm hover:bg-blue-50">Print Report</button>
             <button className="bg-white border border-gray-300 text-gray-600 py-2 px-4 rounded-md text-sm hover:bg-gray-50">Share via gmail</button>
@@ -183,8 +207,10 @@ export default function FinancialInformation() {
               </tbody>
             </table>
           </div>
-          <div className="mb-6 text-lg font-semibold">Net Cash : 1000000</div>
-          <div className="flex items-center space-x-3">
+          <div className="mb-6 text-lg font-semibold">
+            Net Cash : {new Intl.NumberFormat("en-RW", { maximumFractionDigits: 0 }).format(netCash)} Rwf
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
             <button className="bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700">Export Report</button>
             <button className="bg-white border border-blue-600 text-blue-600 py-2 px-4 rounded-md text-sm hover:bg-blue-50">Print Report</button>
             <button className="bg-white border border-gray-300 text-gray-600 py-2 px-4 rounded-md text-sm hover:bg-gray-50">Share via gmail</button>
@@ -211,11 +237,11 @@ export default function FinancialInformation() {
                 <input type="text" className="w-1/2 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="yyyy/mm/dd" />
               </div>
             </div>
-            <div className="flex space-x-3 mb-6">
+            <div className="mb-6 flex flex-wrap gap-3">
               <button className="bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700">Download Report</button>
               <button className="bg-white border border-blue-600 text-blue-600 py-2 px-4 rounded-md text-sm hover:bg-blue-50">Preview</button>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button className="bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700">Export Report</button>
               <button className="bg-white border border-blue-600 text-blue-600 py-2 px-4 rounded-md text-sm hover:bg-blue-50">Print Report</button>
               <button className="bg-white border border-gray-300 text-gray-600 py-2 px-4 rounded-md text-sm hover:bg-gray-50">Share via gmail</button>

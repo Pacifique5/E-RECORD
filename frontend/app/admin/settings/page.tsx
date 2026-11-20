@@ -19,7 +19,7 @@ const PersonalSettings = () => (
     <h2 className="text-lg font-semibold mb-6">Personal Settings</h2>
     
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-1">Full Names</label>
           <input
@@ -78,7 +78,7 @@ const NotificationSettings = () => (
     <h2 className="text-lg font-semibold mb-6">Notifications</h2>
     
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-1">Notification email</label>
           <input

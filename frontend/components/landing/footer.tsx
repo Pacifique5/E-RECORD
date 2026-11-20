@@ -1,4 +1,5 @@
 import Link from "next/link"
+import BrandLogo from "@/components/brand-logo"
 
 export default function Footer() {
   return (
@@ -7,9 +8,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Logo and Social */}
           <div>
-            <Link href="/" className="text-2xl font-bold text-blue-600 mb-4 block">
-              E-Record
-            </Link>
+            <BrandLogo href="/" className="h-10 w-auto mb-4" />
             <div className="w-12 h-0.5 bg-gray-200 mb-6"></div>
             <p className="text-gray-600 mb-4">Connect with us:</p>
             <div className="flex space-x-4">

@@ -109,10 +109,12 @@ export function HeaderUserActions({
           <DropdownMenuSeparator className="dark:border-gray-700" />
 
           <DropdownMenuGroup>
-            <DropdownMenuItem className="cursor-pointer dark:text-gray-200 dark:hover:bg-gray-700">
-              <Sparkles className="mr-2 size-4" />
-              Settings
-            </DropdownMenuItem>
+            <Link href={authUser?.role === "admin" ? "/admin/settings" : getAccountUrl().replace(/\/account$/, "/settings")}>
+              <DropdownMenuItem className="cursor-pointer dark:text-gray-200 dark:hover:bg-gray-700">
+                <Sparkles className="mr-2 size-4" />
+                Settings
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator className="dark:border-gray-700" />

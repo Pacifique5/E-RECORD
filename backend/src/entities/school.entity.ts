@@ -11,6 +11,8 @@ import { Fee } from './fee.entity';
 import { Expense } from './expense.entity';
 import { Payroll } from './payroll.entity';
 import { InventoryItem } from './inventory.entity';
+import { Student } from './student.entity';
+import { Instructor } from './instructor.entity';
 
 @Entity('schools')
 export class School {
@@ -64,6 +66,12 @@ export class School {
 
   @OneToMany(() => InventoryItem, (item) => item.school)
   inventoryItems: InventoryItem[];
+
+  @OneToMany(() => Student, (student) => student.school)
+  students: Student[];
+
+  @OneToMany(() => Instructor, (instructor) => instructor.school)
+  instructors: Instructor[];
 
   @CreateDateColumn()
   createdAt: Date;

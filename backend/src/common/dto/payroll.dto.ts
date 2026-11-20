@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum } from 'class-validator';
-import { PayrollStatus } from '../../entities';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum, IsInt, Min, Max, Matches } from 'class-validator';
+import { PaymentMethod, PayrollStatus } from '../../entities';
+import { SchoolTerm } from '../academic';
 
 export class CreatePayrollDto {
   @IsString()
-  @IsNotEmpty()
+  @Matches(/^[A-Za-z]+(?:[ '\-][A-Za-z]+)*$/, { message: 'Enter the staff name' })
   staffName: string;
 
   @IsString()
@@ -15,20 +16,32 @@ export class CreatePayrollDto {
   position?: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @Min(0)
   baseSalary: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   allowances?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   deductions?: number;
 
   @IsNumber()
-  @IsNotEmpty()
+  @Min(0)
   netSalary: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(2020)
+  @Max(2035)
+  academicYear?: number;
+
+  @IsOptional()
+  @IsEnum(SchoolTerm)
+  term?: SchoolTerm;
 
   @IsNotEmpty()
   payrollMonth: Date;
@@ -36,6 +49,10 @@ export class CreatePayrollDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
 }
 
 export class UpdatePayrollDto {
@@ -58,6 +75,10 @@ export class UpdatePayrollDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
 }
 
 export class PayrollResponseDto {
@@ -73,5 +94,8 @@ export class PayrollResponseDto {
   status: PayrollStatus;
   paidDate?: Date;
   notes?: string;
+  paymentMethod?: PaymentMethod;
+  academicYear: number;
+  term: SchoolTerm;
   createdAt: Date;
 }

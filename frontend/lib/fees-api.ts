@@ -76,11 +76,11 @@ export const feesApi = {
     
     const totalPaid = fees
       .filter(fee => fee.status === 'paid')
-      .reduce((sum, fee) => sum + fee.amountPaid, 0);
+      .reduce((sum, fee) => sum + Number(fee.amountPaid || 0), 0);
     
     const totalUnpaid = fees
       .filter(fee => fee.status !== 'paid')
-      .reduce((sum, fee) => sum + (fee.amount - fee.amountPaid), 0);
+      .reduce((sum, fee) => sum + (Number(fee.amount || 0) - Number(fee.amountPaid || 0)), 0);
     
     const totalStudentsPaid = fees.filter(fee => fee.status === 'paid').length;
     const totalStudentsUnpaid = fees.filter(fee => fee.status !== 'paid').length;

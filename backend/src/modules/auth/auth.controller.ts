@@ -27,6 +27,6 @@ export class AuthController {
     @Request() req,
     @Body() body: { code: string },
   ): Promise<{ valid: boolean; message?: string }> {
-    return this.authService.verifySchoolCode(req.user.sub, body.code);
+    return this.authService.verifySchoolCode(req.user.userId, body.code);
   }
 }

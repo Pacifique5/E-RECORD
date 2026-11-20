@@ -1,32 +1,55 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { apiFetch } from "@/lib/api"
+
+const COLORS = ["bg-blue-600", "bg-green-500", "bg-orange-500", "bg-purple-500", "bg-cyan-500"]
+
 export default function MoneyUsage() {
-  const categories = [
-    { name: "Technology", percentage: 55, color: "bg-blue-500", bgColor: "bg-blue-100" },
-    { name: "Maintenance", percentage: 25, color: "bg-orange-500", bgColor: "bg-orange-100" },
-    { name: "Academic", percentage: 20, color: "bg-green-500", bgColor: "bg-green-100" },
-  ]
+  const [categories, setCategories] = useState<Array<{ name: string; percentage: number; color: string }>>([])
+
+  useEffect(() => {
+    apiFetch("/financial/expenses")
+      .then((rows: Array<{ category?: string; amount: number | string }>) => {
+        const totals = new Map<string, number>()
+        for (const row of Array.isArray(rows) ? rows : []) {
+          const name = row.category || "Other"
+          totals.set(name, (totals.get(name) || 0) + Number(row.amount || 0))
+        }
+        const total = Array.from(totals.values()).reduce((sum, value) => sum + value, 0)
+        setCategories(
+          Array.from(totals.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, value], index) => ({
+              name,
+              percentage: total ? Math.round((value / total) * 100) : 0,
+              color: COLORS[index % COLORS.length],
+            }))
+        )
+      })
+      .catch(() => setCategories([]))
+  }, [])
 
   return (
-    <div className="bg-white rounded-lg p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Money Usage</h2>
-
-      <div className="space-y-6">
-        {categories.map((category, index) => (
-          <div key={index}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">{category.name}</span>
-              <span className="text-sm text-gray-900">{category.percentage}%</span>
+    <div>
+      <h2 className="text-base font-semibold text-gray-900 mb-6">Money Usage</h2>
+      {categories.length === 0 ? (
+        <div className="h-[200px] flex items-center justify-center text-sm text-gray-500">
+          No spending recorded yet.
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {categories.map((category) => (
+            <div key={category.name} className="grid grid-cols-[minmax(0,5.5rem)_1fr_2.5rem] items-center gap-2 sm:grid-cols-[120px_1fr_40px] sm:gap-3">
+              <span className="text-sm text-gray-600 capitalize truncate">{category.name}</span>
+              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div className={`h-2 rounded-full ${category.color}`} style={{ width: `${category.percentage}%` }} />
+              </div>
+              <span className="text-sm text-gray-500 text-right">{category.percentage}%</span>
             </div>
-            <div className={`h-2 rounded-full ${category.bgColor}`}>
-              <div
-                className={`h-full ${category.color} rounded-full transition-all duration-500 ease-in-out`}
-                style={{ width: `${category.percentage}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

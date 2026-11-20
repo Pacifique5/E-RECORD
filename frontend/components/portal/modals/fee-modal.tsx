@@ -4,6 +4,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
 import { apiFetch } from "@/lib/api"
+import { useAcademicPeriod } from "@/components/portal/academic-period"
+import { joinErrors, moneyAmount, personName } from "@/lib/validation"
 
 interface Fee {
   id?: string
@@ -16,6 +18,7 @@ interface Fee {
   dueDate: string
   paidDate?: string
   notes?: string
+  paymentMethod?: string
 }
 
 interface FeeModalProps {
@@ -37,9 +40,11 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
     dueDate: "",
     paidDate: "",
     notes: "",
+    paymentMethod: "cash",
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const { year, term, termLabel } = useAcademicPeriod()
 
   useEffect(() => {
     if (isOpen) {
@@ -60,6 +65,7 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
           dueDate: "",
           paidDate: "",
           notes: "",
+          paymentMethod: "cash",
         })
       }
       setError("")
@@ -78,19 +84,33 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const message = joinErrors([
+      personName(formData.studentName, "Student name"),
+      formData.studentId?.trim() ? "" : "Enter the student ID.",
+      moneyAmount(formData.amount, "Amount"),
+      Number(formData.amountPaid) < 0 ? "Amount paid cannot be negative." : "",
+      Number(formData.amountPaid) > Number(formData.amount) ? "Amount paid cannot be greater than the fee." : "",
+      formData.dueDate ? "" : "Enter the due date.",
+      formData.paymentMethod ? "" : "Select a payment method.",
+    ])
+    if (message) {
+      setError(message)
+      return
+    }
     setLoading(true)
     setError("")
 
+    const payload = { ...formData, academicYear: year, term }
     try {
       if (mode === "add") {
         await apiFetch('/financial/fees', {
           method: 'POST',
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         })
       } else if (mode === "edit" && initialData?.id) {
         await apiFetch(`/financial/fees/${initialData.id}`, {
           method: 'PUT',
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         })
       }
       
@@ -107,8 +127,8 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
   const title = mode === "add" ? "Add New Fee" : mode === "edit" ? "Edit Fee" : "View Fee"
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div className="relative w-full max-w-2xl bg-white rounded-lg shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -117,7 +137,8 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
           <X className="h-4 w-4" />
         </button>
 
-        <h2 className="text-xl font-semibold mb-6">{title}</h2>
+        <h2 className="text-xl font-semibold mb-2">{title}</h2>
+        <p className="mb-6 text-sm text-gray-500">This fee is recorded for {termLabel} {year}.</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -220,6 +241,22 @@ export default function FeeModal({ isOpen, mode, onClose, initialData, onSave }:
                 <option value="unpaid">Unpaid</option>
                 <option value="partial">Partial</option>
                 <option value="paid">Paid</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+              <select
+                name="paymentMethod"
+                value={formData.paymentMethod || "cash"}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isReadOnly}
+                required
+              >
+                <option value="mobile_money">Mobile Money</option>
+                <option value="cash">Cash</option>
+                <option value="other">Other</option>
               </select>
             </div>
 

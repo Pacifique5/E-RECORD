@@ -6,9 +6,11 @@ import {
   Param,
   Put,
   Delete,
+  Query,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
+import { parsePeriod } from '../../common/academic';
 import { FinancialService } from './financial.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import {
@@ -37,8 +39,8 @@ export class FinancialController {
   }
 
   @Get('fees')
-  async getAllFees(): Promise<FeeResponseDto[]> {
-    return this.financialService.getAllFees();
+  async getAllFees(@Query('year') year?: string, @Query('term') term?: string): Promise<FeeResponseDto[]> {
+    return this.financialService.getAllFees(parsePeriod(year, term));
   }
 
   @Get('fees/:id')
@@ -60,13 +62,13 @@ export class FinancialController {
   }
 
   @Get('fees/stats')
-  async getFeeStats(): Promise<{
+  async getFeeStats(@Query('year') year?: string, @Query('term') term?: string): Promise<{
     totalPaid: number;
     totalUnpaid: number;
     totalStudentsPaid: number;
     totalStudentsUnpaid: number;
   }> {
-    return this.financialService.getFeeStats();
+    return this.financialService.getFeeStats(parsePeriod(year, term));
   }
 
   // EXPENSE ENDPOINTS
@@ -78,8 +80,8 @@ export class FinancialController {
   }
 
   @Get('expenses')
-  async getAllExpenses(): Promise<ExpenseResponseDto[]> {
-    return this.financialService.getAllExpenses();
+  async getAllExpenses(@Query('year') year?: string, @Query('term') term?: string): Promise<ExpenseResponseDto[]> {
+    return this.financialService.getAllExpenses(parsePeriod(year, term));
   }
 
   @Get('expenses/:id')
@@ -109,8 +111,8 @@ export class FinancialController {
   }
 
   @Get('payrolls')
-  async getAllPayrolls(): Promise<PayrollResponseDto[]> {
-    return this.financialService.getAllPayrolls();
+  async getAllPayrolls(@Query('year') year?: string, @Query('term') term?: string): Promise<PayrollResponseDto[]> {
+    return this.financialService.getAllPayrolls(parsePeriod(year, term));
   }
 
   @Get('payrolls/:id')

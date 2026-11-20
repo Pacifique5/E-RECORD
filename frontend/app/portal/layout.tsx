@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import LoadingSpinner from '@/components/loading-spinner';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     setChecking(false);
   }, [router]);
 
-  if (checking) return <div className="p-8">Checking authentication…</div>;
+  if (checking) return <LoadingSpinner fullScreen />;
 
   return <div className="min-h-screen">{children}</div>;
 }

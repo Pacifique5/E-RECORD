@@ -1,5 +1,4 @@
 import { ArrowRight } from "lucide-react"
-import { Button } from "../ui/button"
 
 export default function FeaturesSection() {
   const features = [
@@ -30,11 +29,14 @@ export default function FeaturesSection() {
             <div key={index} className="p-6">
               <h3 className="text-xl font-bold text-blue-600 mb-4">{feature.title}</h3>
               <p className="text-gray-600 mb-6">{feature.description}</p>
-              <Button variant="outline" className="flex items-center text-white hover:text-white bg-blue-600 hover:bg-blue-700 transition-all">
-              Learn more
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+              <button
+                type="button"
+                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700"
+              >
+                Learn more
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </button>
+            </div>
           ))}
         </div>
       </div>

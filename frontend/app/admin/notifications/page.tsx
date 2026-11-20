@@ -4,6 +4,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
+import LoadingSpinner from '@/components/loading-spinner';
 
 interface Notification {
   id: string;
@@ -65,7 +66,7 @@ const NotificationItem = ({ notification, onMarkAsRead }: { notification: Notifi
       onClick={handleClick}
     >
       <NotificationIcon type={notification.type} isRead={notification.isRead} />
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <h4 className={`font-medium ${!notification.isRead ? 'text-gray-900' : 'text-gray-600'}`}>
           {notification.title}
         </h4>
@@ -100,7 +101,7 @@ const TabButton = ({ active, label, count }: { active: boolean; label: string; c
 
 export default function NotificationsPage() {
   return (
-    <Suspense fallback={<div className="p-8">Loading...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
       <NotificationsContent />
     </Suspense>
   );
@@ -182,40 +183,21 @@ function NotificationsContent() {
   });
 
   if (loading) {
-    return (
-      <div className="p-8">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex space-x-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
-    <div className="p-8">
+    <div>
       <div className="bg-white rounded-lg shadow-sm">
         <div className="border-b">
-          <div className="px-6 py-4 flex justify-between items-center">
-            <div className="flex gap-2">
+          <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex flex-wrap gap-2">
               <TabButton active={currentTab === 'all'} label="All" count={counts.total} />
               <TabButton active={currentTab === 'unread'} label="Unread" count={counts.unread} />
               <TabButton active={currentTab === 'spam'} label="Spam" />
             </div>
             
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={fetchNotifications}
                 className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"

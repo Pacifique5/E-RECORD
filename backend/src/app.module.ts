@@ -11,6 +11,8 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { MigrationModule } from './modules/migration/migration.module';
+import { StudentsModule } from './modules/students/students.module';
+import { InstructorsModule } from './modules/instructors/instructors.module';
 import {
   User,
   School,
@@ -19,6 +21,8 @@ import {
   Payroll,
   InventoryItem,
   Notification,
+  Student,
+  Instructor,
 } from './entities';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -36,7 +40,7 @@ import { RolesGuard } from './common/guards/roles.guard';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_NAME || 'erecord_db',
-      entities: [User, School, Fee, Expense, Payroll, InventoryItem, Notification],
+      entities: [User, School, Fee, Expense, Payroll, InventoryItem, Notification, Student, Instructor],
       synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV === 'development',
     }),
@@ -48,6 +52,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     NotificationsModule,
     DashboardModule,
     MigrationModule,
+    StudentsModule,
+    InstructorsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: RolesGuard }],

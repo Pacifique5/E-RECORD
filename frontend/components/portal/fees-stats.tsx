@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { feesApi, FeeStats } from '@/lib/fees-api';
+import LoadingSpinner from '@/components/loading-spinner';
 
 export default function FeesStats() {
   const [stats, setStats] = useState<FeeStats | null>(null);
@@ -26,18 +27,7 @@ export default function FeesStats() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, index) => (
-          <div key={index} className="bg-white rounded-lg p-6 animate-pulse">
-            <div className="text-center">
-              <div className="h-8 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {
@@ -51,11 +41,7 @@ export default function FeesStats() {
   if (!stats) return null;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-RW', {
-      style: 'currency',
-      currency: 'RWF',
-      minimumFractionDigits: 0,
-    }).format(amount);
+    return `${Math.round(Number(amount) || 0).toLocaleString("en-US")} Rwf`;
   };
 
   const statsData = [
