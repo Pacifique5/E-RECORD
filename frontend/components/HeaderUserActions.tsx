@@ -20,7 +20,7 @@ export function HeaderUserActions({
   user: {
     name: string;
     role: string;
-    avatar: string;
+    avatar?: string;
   };
 }) {
   const router = useRouter();
@@ -45,7 +45,7 @@ export function HeaderUserActions({
     if (authUser?.profilePicture) {
       return `http://localhost:3001${authUser.profilePicture}`;
     }
-    return user.avatar || null;
+    return null;
   };
 
   // Get user initials for fallback

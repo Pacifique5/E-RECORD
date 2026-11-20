@@ -23,8 +23,18 @@ export class DashboardService {
     private payrollRepository: Repository<Payroll>,
   ) {}
 
-  async getDashboardStats(schoolId?: string | null, period: AcademicQuery = {}) {
-    if (!schoolId) {
+  async getDashboardStats(schoolId?: string | null, period: AcademicQuery = {}, allSchools = false) {
+    if (!schoolId && !allSchools) {
+      return {
+        totalUsers: 0,
+        totalSchools: 0,
+        totalFees: 0,
+        totalExpenses: 0,
+        totalPayrolls: 0,
+        netIncome: 0,
+      };
+    }
+    if (allSchools) {
       // Admin view - all data
       const [totalUsers, totalSchools, fees, expenses, payrolls] = await Promise.all([
         this.userRepository.count(),
@@ -47,12 +57,12 @@ export class DashboardService {
         netIncome: totalFees - totalExpenses - totalPayrolls,
       };
     } else {
-      // School-specific view - filtered data
+      const id = schoolId as string;
       const [schoolUsers, fees, expenses, payrolls] = await Promise.all([
-        this.userRepository.count({ where: { school: { id: schoolId } } }),
-        this.feeRepository.find({ where: { school: { id: schoolId } } }).then((rows) => rows.filter((row) => inPeriod(row, period))),
-        this.expenseRepository.find({ where: { school: { id: schoolId } } }).then((rows) => rows.filter((row) => inPeriod(row, period))),
-        this.payrollRepository.find({ where: { school: { id: schoolId } } }).then((rows) => rows.filter((row) => inPeriod(row, period))),
+        this.userRepository.count({ where: { school: { id } } }),
+        this.feeRepository.find({ where: { school: { id } } }).then((rows) => rows.filter((row) => inPeriod(row, period))),
+        this.expenseRepository.find({ where: { school: { id } } }).then((rows) => rows.filter((row) => inPeriod(row, period))),
+        this.payrollRepository.find({ where: { school: { id } } }).then((rows) => rows.filter((row) => inPeriod(row, period))),
       ]);
 
       const totalFees = fees.reduce((sum, fee) => sum + Number(fee.amountPaid), 0);
@@ -71,7 +81,17 @@ export class DashboardService {
   }
 
   async getFinancialSummary(schoolId?: string | null, period: AcademicQuery = {}) {
-    const whereClause = schoolId ? { school: { id: schoolId } } : {};
+    if (!schoolId) {
+      return {
+        totalIncome: 0,
+        totalExpenses: 0,
+        totalPayroll: 0,
+        netProfit: 0,
+        paidFeesCount: 0,
+        unpaidFeesCount: 0,
+      };
+    }
+    const whereClause = { school: { id: schoolId } };
     
     const [fees, expenses, payrolls] = await Promise.all([
       this.feeRepository.find({ where: whereClause }).then((rows) => rows.filter((row) => inPeriod(row, period))),
@@ -97,7 +117,7 @@ export class DashboardService {
   }
 
   async getIncomeExpensesData(schoolId?: string | null, period: AcademicQuery = {}) {
-    const whereClause = schoolId ? { school: { id: schoolId } } : {};
+    const whereClause = schoolId ? { school: { id: schoolId } } : { id: '00000000-0000-0000-0000-000000000000' };
     
     const [fees, expenses] = await Promise.all([
       this.feeRepository.find({ where: whereClause }).then((rows) => rows.filter((row) => inPeriod(row, period))),
@@ -137,7 +157,7 @@ export class DashboardService {
   }
 
   async getPayrollTrendData(schoolId?: string | null, period: AcademicQuery = {}) {
-    const whereClause = schoolId ? { school: { id: schoolId } } : {};
+    const whereClause = schoolId ? { school: { id: schoolId } } : { id: '00000000-0000-0000-0000-000000000000' };
     const payrolls = (await this.payrollRepository.find({ where: whereClause })).filter((row) => inPeriod(row, period));
 
     const monthlyData: Array<{ month: string; amount: number }> = [];

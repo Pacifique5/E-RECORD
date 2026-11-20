@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Instructor } from '../../entities/instructor.entity';
-import { User, UserRole } from '../../entities/user.entity';
+import { User } from '../../entities/user.entity';
 import { CreateInstructorDto, InstructorResponseDto, UpdateInstructorDto } from '../../common/dto/instructor.dto';
 
 @Injectable()
@@ -19,6 +19,7 @@ export class InstructorsService {
       where: { id: userId },
       relations: ['school'],
     });
+    if (!user?.school) throw new BadRequestException('This account is not linked to a school');
     const instructor = this.instructorRepository.create({
       firstName: dto.firstName.trim(),
       lastName: dto.lastName.trim(),
@@ -27,7 +28,7 @@ export class InstructorsService {
       alternatePhone: dto.alternatePhone?.trim() || null,
       subject: dto.subject,
       instructorCode: await this.nextCode(),
-      ...(user?.school ? { school: user.school } : {}),
+      school: user.school,
     });
     await this.instructorRepository.save(instructor);
     return this.toResponse(instructor);
@@ -38,25 +39,28 @@ export class InstructorsService {
       where: { id: userId },
       relations: ['school'],
     });
-    const where =
-      user && user.role !== UserRole.ADMIN && user.school
-        ? { school: { id: user.school.id } }
-        : {};
+    if (!user?.school) return [];
     const instructors = await this.instructorRepository.find({
-      where,
+      where: { school: { id: user.school.id } },
       order: { instructorCode: 'ASC' },
     });
     return instructors.map((instructor) => this.toResponse(instructor));
   }
 
-  async findById(id: string): Promise<InstructorResponseDto> {
-    const instructor = await this.instructorRepository.findOne({ where: { id } });
+  async findById(id: string, userId: string): Promise<InstructorResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['school'] });
+    const instructor = await this.instructorRepository.findOne({
+      where: user?.school ? { id, school: { id: user.school.id } } : { id: '00000000-0000-0000-0000-000000000000' },
+    });
     if (!instructor) throw new NotFoundException('Instructor not found');
     return this.toResponse(instructor);
   }
 
-  async update(id: string, dto: UpdateInstructorDto): Promise<InstructorResponseDto> {
-    const instructor = await this.instructorRepository.findOne({ where: { id } });
+  async update(id: string, dto: UpdateInstructorDto, userId: string): Promise<InstructorResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['school'] });
+    const instructor = await this.instructorRepository.findOne({
+      where: user?.school ? { id, school: { id: user.school.id } } : { id: '00000000-0000-0000-0000-000000000000' },
+    });
     if (!instructor) throw new NotFoundException('Instructor not found');
 
     if (dto.firstName !== undefined) instructor.firstName = dto.firstName.trim();

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Student, UPPER_CLASSES } from '../../entities/student.entity';
 import { classInYear } from '../../common/academic';
-import { User, UserRole } from '../../entities/user.entity';
+import { User } from '../../entities/user.entity';
 import { CreateStudentDto, StudentResponseDto, UpdateStudentDto } from '../../common/dto/student.dto';
 
 @Injectable()
@@ -20,6 +20,7 @@ export class StudentsService {
       where: { id: userId },
       relations: ['school'],
     });
+    if (!user?.school) throw new BadRequestException('This account is not linked to a school');
     this.assertDob(dto.dateOfBirth);
     const classLevel = dto.classLevel;
     const combination = this.resolveCombination(classLevel, dto.combination);
@@ -36,7 +37,7 @@ export class StudentsService {
       classLevel,
       combination,
       studentCode: await this.nextCode(),
-      ...(user?.school ? { school: user.school } : {}),
+      school: user.school,
     });
     await this.studentRepository.save(student);
     return this.toResponse(student);
@@ -47,12 +48,9 @@ export class StudentsService {
       where: { id: userId },
       relations: ['school'],
     });
-    const where =
-      user && user.role !== UserRole.ADMIN && user.school
-        ? { school: { id: user.school.id } }
-        : {};
+    if (!user?.school) return [];
     const students = await this.studentRepository.find({
-      where,
+      where: { school: { id: user.school.id } },
       order: { studentCode: 'ASC' },
     });
     return students
@@ -60,14 +58,20 @@ export class StudentsService {
       .filter((student) => (year ? student.enrolled : true));
   }
 
-  async findById(id: string): Promise<StudentResponseDto> {
-    const student = await this.studentRepository.findOne({ where: { id } });
+  async findById(id: string, userId: string): Promise<StudentResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['school'] });
+    const student = await this.studentRepository.findOne({
+      where: user?.school ? { id, school: { id: user.school.id } } : { id: '00000000-0000-0000-0000-000000000000' },
+    });
     if (!student) throw new NotFoundException('Student not found');
     return this.toResponse(student);
   }
 
-  async update(id: string, dto: UpdateStudentDto): Promise<StudentResponseDto> {
-    const student = await this.studentRepository.findOne({ where: { id } });
+  async update(id: string, dto: UpdateStudentDto, userId: string): Promise<StudentResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['school'] });
+    const student = await this.studentRepository.findOne({
+      where: user?.school ? { id, school: { id: user.school.id } } : { id: '00000000-0000-0000-0000-000000000000' },
+    });
     if (!student) throw new NotFoundException('Student not found');
 
     if (dto.dateOfBirth) this.assertDob(dto.dateOfBirth);

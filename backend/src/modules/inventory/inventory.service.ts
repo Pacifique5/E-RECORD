@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InventoryItem } from '../../entities/inventory.entity';
+import { User } from '../../entities/user.entity';
 import {
   CreateInventoryItemDto,
   UpdateInventoryItemDto,
@@ -13,32 +14,46 @@ export class InventoryService {
   constructor(
     @InjectRepository(InventoryItem)
     private inventoryRepository: Repository<InventoryItem>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
+
+  private async schoolId(userId: string): Promise<string | null> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['school'] });
+    return user?.school?.id || null;
+  }
 
   async create(
     createInventoryDto: CreateInventoryItemDto,
+    userId: string,
   ): Promise<InventoryResponseDto> {
+    const school = await this.userRepository.findOne({ where: { id: userId }, relations: ['school'] });
+    if (!school?.school) throw new BadRequestException('This account is not linked to a school');
     const totalValue = createInventoryDto.quantity * createInventoryDto.unitCost;
 
     const item = this.inventoryRepository.create({
       ...createInventoryDto,
       totalValue,
+      school: school.school,
     });
 
     await this.inventoryRepository.save(item);
     return this.toResponseDto(item);
   }
 
-  async findAll(): Promise<InventoryResponseDto[]> {
+  async findAll(userId: string): Promise<InventoryResponseDto[]> {
+    const id = await this.schoolId(userId);
+    if (!id) return [];
     const items = await this.inventoryRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, school: { id } },
     });
     return items.map((item) => this.toResponseDto(item));
   }
 
-  async findById(id: string): Promise<InventoryResponseDto> {
+  async findById(id: string, userId: string): Promise<InventoryResponseDto> {
+    const school = await this.schoolId(userId);
     const item = await this.inventoryRepository.findOne({
-      where: { id, isActive: true },
+      where: school ? { id, isActive: true, school: { id: school } } : { id: '00000000-0000-0000-0000-000000000000' },
     });
     if (!item) {
       throw new NotFoundException(`Inventory item with ID ${id} not found`);
@@ -46,9 +61,11 @@ export class InventoryService {
     return this.toResponseDto(item);
   }
 
-  async findByCategory(category: string): Promise<InventoryResponseDto[]> {
+  async findByCategory(category: string, userId: string): Promise<InventoryResponseDto[]> {
+    const id = await this.schoolId(userId);
+    if (!id) return [];
     const items = await this.inventoryRepository.find({
-      where: { category, isActive: true },
+      where: { category, isActive: true, school: { id } },
     });
     return items.map((item) => this.toResponseDto(item));
   }
@@ -56,9 +73,11 @@ export class InventoryService {
   async update(
     id: string,
     updateInventoryDto: UpdateInventoryItemDto,
+    userId: string,
   ): Promise<InventoryResponseDto> {
+    const school = await this.schoolId(userId);
     const item = await this.inventoryRepository.findOne({
-      where: { id, isActive: true },
+      where: school ? { id, isActive: true, school: { id: school } } : { id: '00000000-0000-0000-0000-000000000000' },
     });
     if (!item) {
       throw new NotFoundException(`Inventory item with ID ${id} not found`);
@@ -77,9 +96,10 @@ export class InventoryService {
     return this.toResponseDto(item);
   }
 
-  async delete(id: string): Promise<{ message: string }> {
+  async delete(id: string, userId: string): Promise<{ message: string }> {
+    const school = await this.schoolId(userId);
     const item = await this.inventoryRepository.findOne({
-      where: { id, isActive: true },
+      where: school ? { id, isActive: true, school: { id: school } } : { id: '00000000-0000-0000-0000-000000000000' },
     });
     if (!item) {
       throw new NotFoundException(`Inventory item with ID ${id} not found`);
@@ -90,9 +110,11 @@ export class InventoryService {
     return { message: 'Inventory item deleted successfully' };
   }
 
-  async getLowStockItems(threshold: number = 10): Promise<InventoryResponseDto[]> {
+  async getLowStockItems(userId: string, threshold: number = 10): Promise<InventoryResponseDto[]> {
+    const id = await this.schoolId(userId);
+    if (!id) return [];
     const items = await this.inventoryRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, school: { id } },
     });
     return items
       .filter((item) => item.quantity <= threshold)

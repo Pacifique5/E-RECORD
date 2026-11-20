@@ -217,7 +217,6 @@ function PortalFrame({
               user={{
                 name: user?.firstName || "User",
                 role: ROLE_LABEL[role],
-                avatar: "/mp.jpg",
               }}
             />
           </div>

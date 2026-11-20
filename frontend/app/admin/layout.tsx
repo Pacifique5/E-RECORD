@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HeaderUserActions } from '@/components/HeaderUserActions';
+import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/components/brand-logo';
 import { apiFetch } from '@/lib/api';
 
@@ -134,6 +135,7 @@ const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
 };
 
 const Header = ({ onMenu }: { onMenu: () => void }) => {
+  const { user: authUser } = useAuth();
   const [year, setYear] = useState(2025);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const years = [2023, 2024, 2025, 2026, 2027];
@@ -151,9 +153,8 @@ const Header = ({ onMenu }: { onMenu: () => void }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [dropdownRef])
   const user = {
-    name: 'Paci fique',
-    role: 'Admin',
-    avatar: '/mp.jpg',
+    name: authUser?.firstName || 'Admin',
+    role: authUser?.role || 'Admin',
   };
 
   return (

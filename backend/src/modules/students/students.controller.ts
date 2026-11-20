@@ -26,15 +26,19 @@ export class StudentsController {
   }
 
   @Get(':id')
-  findById(@Param('id') id: string): Promise<StudentResponseDto> {
-    return this.studentsService.findById(id);
+  findById(
+    @Param('id') id: string,
+    @Req() req: { user: { userId: string } },
+  ): Promise<StudentResponseDto> {
+    return this.studentsService.findById(id, req.user.userId);
   }
 
   @Put(':id')
   update(
     @Param('id') id: string,
     @Body(ValidationPipe) dto: UpdateStudentDto,
+    @Req() req: { user: { userId: string } },
   ): Promise<StudentResponseDto> {
-    return this.studentsService.update(id, dto);
+    return this.studentsService.update(id, dto, req.user.userId);
   }
 }

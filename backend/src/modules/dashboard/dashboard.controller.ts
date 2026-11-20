@@ -29,7 +29,10 @@ export class DashboardController {
     @Query('year') year?: string,
     @Query('term') term?: string,
   ) {
-    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
+    if (req.user.role === UserRole.ADMIN) {
+      return this.dashboardService.getDashboardStats(null, parsePeriod(year, term), true);
+    }
+    const schoolId = await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getDashboardStats(schoolId, parsePeriod(year, term));
   }
 
@@ -39,7 +42,7 @@ export class DashboardController {
     @Query('year') year?: string,
     @Query('term') term?: string,
   ) {
-    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getFinancialSummary(schoolId, parsePeriod(year, term));
   }
 
@@ -49,7 +52,7 @@ export class DashboardController {
     @Query('year') year?: string,
     @Query('term') term?: string,
   ) {
-    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getIncomeExpensesData(schoolId, parsePeriod(year, term));
   }
 
@@ -59,7 +62,7 @@ export class DashboardController {
     @Query('year') year?: string,
     @Query('term') term?: string,
   ) {
-    const schoolId = req.user.role === UserRole.ADMIN ? null : await this.getUserSchoolId(req.user.userId);
+    const schoolId = await this.getUserSchoolId(req.user.userId);
     return this.dashboardService.getPayrollTrendData(schoolId, parsePeriod(year, term));
   }
 }

@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Fee } from '../../entities/fee.entity';
 import { Expense } from '../../entities/expense.entity';
 import { Payroll } from '../../entities/payroll.entity';
+import { User } from '../../entities/user.entity';
+import { School } from '../../entities/school.entity';
 import {
   CreateFeeDto,
   UpdateFeeDto,
@@ -26,14 +28,32 @@ export class FinancialService {
     private expenseRepository: Repository<Expense>,
     @InjectRepository(Payroll)
     private payrollRepository: Repository<Payroll>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
+  private async schoolFor(userId: string): Promise<School | null> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['school'],
+    });
+    return user?.school || null;
+  }
+
+  private async requireSchool(userId: string): Promise<School> {
+    const school = await this.schoolFor(userId);
+    if (!school) throw new BadRequestException('This account is not linked to a school');
+    return school;
+  }
+
   // FEE METHODS
-  async createFee(createFeeDto: CreateFeeDto): Promise<FeeResponseDto> {
+  async createFee(createFeeDto: CreateFeeDto, userId: string): Promise<FeeResponseDto> {
     const due = new Date(createFeeDto.dueDate);
     if (Number.isNaN(due.getTime())) throw new BadRequestException('Enter a valid due date');
+    const school = await this.requireSchool(userId);
     const fee = this.feeRepository.create({
       ...createFeeDto,
+      school,
       academicYear: createFeeDto.academicYear || due.getFullYear(),
       term: createFeeDto.term || termFromMonth(due.getMonth()),
     });
@@ -41,21 +61,25 @@ export class FinancialService {
     return this.toFeeResponseDto(fee);
   }
 
-  async getAllFees(period: AcademicQuery = {}): Promise<FeeResponseDto[]> {
-    const fees = await this.feeRepository.find();
+  async getAllFees(userId: string, period: AcademicQuery = {}): Promise<FeeResponseDto[]> {
+    const school = await this.schoolFor(userId);
+    if (!school) return [];
+    const fees = await this.feeRepository.find({ where: { school: { id: school.id } } });
     return fees.filter((fee) => inPeriod(fee, period)).map((fee) => this.toFeeResponseDto(fee));
   }
 
-  async getFeeById(id: string): Promise<FeeResponseDto> {
-    const fee = await this.feeRepository.findOne({ where: { id } });
+  async getFeeById(id: string, userId: string): Promise<FeeResponseDto> {
+    const school = await this.requireSchool(userId);
+    const fee = await this.feeRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!fee) {
       throw new NotFoundException(`Fee with ID ${id} not found`);
     }
     return this.toFeeResponseDto(fee);
   }
 
-  async updateFee(id: string, updateFeeDto: UpdateFeeDto): Promise<FeeResponseDto> {
-    const fee = await this.feeRepository.findOne({ where: { id } });
+  async updateFee(id: string, updateFeeDto: UpdateFeeDto, userId: string): Promise<FeeResponseDto> {
+    const school = await this.requireSchool(userId);
+    const fee = await this.feeRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!fee) {
       throw new NotFoundException(`Fee with ID ${id} not found`);
     }
@@ -68,8 +92,9 @@ export class FinancialService {
     return this.toFeeResponseDto(fee);
   }
 
-  async deleteFee(id: string): Promise<{ message: string }> {
-    const fee = await this.feeRepository.findOne({ where: { id } });
+  async deleteFee(id: string, userId: string): Promise<{ message: string }> {
+    const school = await this.requireSchool(userId);
+    const fee = await this.feeRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!fee) {
       throw new NotFoundException(`Fee with ID ${id} not found`);
     }
@@ -78,13 +103,16 @@ export class FinancialService {
     return { message: 'Fee deleted successfully' };
   }
 
-  async getFeeStats(period: AcademicQuery = {}): Promise<{
+  async getFeeStats(userId: string, period: AcademicQuery = {}): Promise<{
     totalPaid: number;
     totalUnpaid: number;
     totalStudentsPaid: number;
     totalStudentsUnpaid: number;
   }> {
-    const fees = (await this.feeRepository.find()).filter((fee) => inPeriod(fee, period));
+    const school = await this.schoolFor(userId);
+    const fees = school
+      ? (await this.feeRepository.find({ where: { school: { id: school.id } } })).filter((fee) => inPeriod(fee, period))
+      : [];
     
     const paidFees = fees.filter(fee => fee.status === 'paid');
     const unpaidFees = fees.filter(fee => fee.status !== 'paid');
@@ -101,11 +129,13 @@ export class FinancialService {
   }
 
   // EXPENSE METHODS
-  async createExpense(createExpenseDto: CreateExpenseDto): Promise<ExpenseResponseDto> {
+  async createExpense(createExpenseDto: CreateExpenseDto, userId: string): Promise<ExpenseResponseDto> {
     const date = new Date(createExpenseDto.date);
     if (Number.isNaN(date.getTime())) throw new BadRequestException('Enter a valid expense date');
+    const school = await this.requireSchool(userId);
     const expense = this.expenseRepository.create({
       ...createExpenseDto,
+      school,
       academicYear: createExpenseDto.academicYear || date.getFullYear(),
       term: createExpenseDto.term || termFromMonth(date.getMonth()),
     });
@@ -113,13 +143,16 @@ export class FinancialService {
     return this.toExpenseResponseDto(expense);
   }
 
-  async getAllExpenses(period: AcademicQuery = {}): Promise<ExpenseResponseDto[]> {
-    const expenses = await this.expenseRepository.find();
+  async getAllExpenses(userId: string, period: AcademicQuery = {}): Promise<ExpenseResponseDto[]> {
+    const school = await this.schoolFor(userId);
+    if (!school) return [];
+    const expenses = await this.expenseRepository.find({ where: { school: { id: school.id } } });
     return expenses.filter((expense) => inPeriod(expense, period)).map((expense) => this.toExpenseResponseDto(expense));
   }
 
-  async getExpenseById(id: string): Promise<ExpenseResponseDto> {
-    const expense = await this.expenseRepository.findOne({ where: { id } });
+  async getExpenseById(id: string, userId: string): Promise<ExpenseResponseDto> {
+    const school = await this.requireSchool(userId);
+    const expense = await this.expenseRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!expense) {
       throw new NotFoundException(`Expense with ID ${id} not found`);
     }
@@ -129,8 +162,10 @@ export class FinancialService {
   async updateExpense(
     id: string,
     updateExpenseDto: UpdateExpenseDto,
+    userId: string,
   ): Promise<ExpenseResponseDto> {
-    const expense = await this.expenseRepository.findOne({ where: { id } });
+    const school = await this.requireSchool(userId);
+    const expense = await this.expenseRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!expense) {
       throw new NotFoundException(`Expense with ID ${id} not found`);
     }
@@ -140,8 +175,9 @@ export class FinancialService {
     return this.toExpenseResponseDto(expense);
   }
 
-  async deleteExpense(id: string): Promise<{ message: string }> {
-    const expense = await this.expenseRepository.findOne({ where: { id } });
+  async deleteExpense(id: string, userId: string): Promise<{ message: string }> {
+    const school = await this.requireSchool(userId);
+    const expense = await this.expenseRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!expense) {
       throw new NotFoundException(`Expense with ID ${id} not found`);
     }
@@ -151,7 +187,7 @@ export class FinancialService {
   }
 
   // PAYROLL METHODS
-  async createPayroll(createPayrollDto: CreatePayrollDto): Promise<PayrollResponseDto> {
+  async createPayroll(createPayrollDto: CreatePayrollDto, userId: string): Promise<PayrollResponseDto> {
     const month = new Date(createPayrollDto.payrollMonth);
     if (Number.isNaN(month.getTime())) throw new BadRequestException('Enter a valid payroll month');
     const allowances = Number(createPayrollDto.allowances || 0);
@@ -159,8 +195,10 @@ export class FinancialService {
     if (deductions > Number(createPayrollDto.baseSalary) + allowances) {
       throw new BadRequestException('Deductions cannot be greater than salary and allowances');
     }
+    const school = await this.requireSchool(userId);
     const payroll = this.payrollRepository.create({
       ...createPayrollDto,
+      school,
       academicYear: createPayrollDto.academicYear || month.getFullYear(),
       term: createPayrollDto.term || termFromMonth(month.getMonth()),
     });
@@ -168,13 +206,16 @@ export class FinancialService {
     return this.toPayrollResponseDto(payroll);
   }
 
-  async getAllPayrolls(period: AcademicQuery = {}): Promise<PayrollResponseDto[]> {
-    const payrolls = await this.payrollRepository.find();
+  async getAllPayrolls(userId: string, period: AcademicQuery = {}): Promise<PayrollResponseDto[]> {
+    const school = await this.schoolFor(userId);
+    if (!school) return [];
+    const payrolls = await this.payrollRepository.find({ where: { school: { id: school.id } } });
     return payrolls.filter((payroll) => inPeriod(payroll, period)).map((payroll) => this.toPayrollResponseDto(payroll));
   }
 
-  async getPayrollById(id: string): Promise<PayrollResponseDto> {
-    const payroll = await this.payrollRepository.findOne({ where: { id } });
+  async getPayrollById(id: string, userId: string): Promise<PayrollResponseDto> {
+    const school = await this.requireSchool(userId);
+    const payroll = await this.payrollRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!payroll) {
       throw new NotFoundException(`Payroll with ID ${id} not found`);
     }
@@ -184,8 +225,10 @@ export class FinancialService {
   async updatePayroll(
     id: string,
     updatePayrollDto: UpdatePayrollDto,
+    userId: string,
   ): Promise<PayrollResponseDto> {
-    const payroll = await this.payrollRepository.findOne({ where: { id } });
+    const school = await this.requireSchool(userId);
+    const payroll = await this.payrollRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!payroll) {
       throw new NotFoundException(`Payroll with ID ${id} not found`);
     }
@@ -195,8 +238,9 @@ export class FinancialService {
     return this.toPayrollResponseDto(payroll);
   }
 
-  async deletePayroll(id: string): Promise<{ message: string }> {
-    const payroll = await this.payrollRepository.findOne({ where: { id } });
+  async deletePayroll(id: string, userId: string): Promise<{ message: string }> {
+    const school = await this.requireSchool(userId);
+    const payroll = await this.payrollRepository.findOne({ where: { id, school: { id: school.id } } });
     if (!payroll) {
       throw new NotFoundException(`Payroll with ID ${id} not found`);
     }

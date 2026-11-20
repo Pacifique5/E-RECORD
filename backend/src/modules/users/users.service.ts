@@ -73,11 +73,12 @@ export class UsersService {
         relations: ['school'],
       });
       
-      if (currentUser && currentUser.school) {
-        queryBuilder.andWhere('user.school.id = :schoolId', { 
-          schoolId: currentUser.school.id 
-        });
+      if (!currentUser?.school) {
+        return { users: [], total: 0, page, limit, totalPages: 0 };
       }
+      queryBuilder.andWhere('user.school.id = :schoolId', {
+        schoolId: currentUser.school.id,
+      });
     }
 
     const total = await queryBuilder.getCount();
